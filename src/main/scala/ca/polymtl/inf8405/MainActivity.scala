@@ -12,6 +12,7 @@ class MainActivity extends Activity with TypedActivity
 {
   override def onCreate(bundle: Bundle)
   {
+    // install jdk 1.6 ( yep Java 6 because of ProGuard )
     // monitor
     // android:start-device
     // attach remote debugger port 8600
