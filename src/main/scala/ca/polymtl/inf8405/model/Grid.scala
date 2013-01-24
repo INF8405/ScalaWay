@@ -1,79 +1,56 @@
 package ca.polymtl.inf8405.model
 
-case class Grid( cells: Map[Coordinate, Cell], width: Int, height: Int )
+object GridFactory
 {
-  require( linksInside )
-
-  def link( from: Coordinate, to: Coordinate ) =
+  object SevenBySeven
   {
-    ( cells.get( from ), cells.get( to ) ) match
-    {
-      case ( Some( cell ), None ) => update( cell, to )
-      case ( Some( fromCell ), Some( toCell ) ) => update( fromCell, toCell )
-      case _ => this
-    }
+    def level1: Grid = ???
+    def level2: Grid = ???
+    def level3: Grid = ???
   }
 
-  private def update( from: Cell, to: Coordinate ) =
+  object EightByEight
   {
-
-  }
-
-  private def update( from: Cell, to: Cell ) =
-  {
-
-  }
-
-  private def linksInside =
-  {
-    cells.forall{
-      case ( k, _ ) => {
-        0 <= k.x && k.x <= width &&
-        0 <= k.y && k.y <= height
-      }
-    }
+    def level1: Grid = ???
+    def level2: Grid = ???
+    def level3: Grid = ???
   }
 }
 
-abstract class Cell( color: Color, val coordinate: Coordinate )
+case class Grid( tokens: List[Token], links: List[Link], width: Int, height: Int )
 {
-  def link( to: Coordinate ): Update
-  def link( to: Cell ): Update
-}
+  import scala.collection.JavaConversions._
 
+  def jtokens: java.util.List[Token] = tokens
+  def jlinks: java.util.List[Link] = links
 
-class Link( color: Color, coordinate: Coordinate, next: Option[Link] ) extends Cell( color, coordinate )
-{
-  def nextChain0: List[Coordinate] = coordinate :: nextChain
-  def nextChain = next.map( _.nextChain0 ).getOrElse( Nil )
-
-  def link( to: Coordinate ): Update =
+  def link( from: Coordinate, direction: Direction ): Grid =
   {
-    val nextCell = new Link( color, to, None )
-    val thisCell = new Link( color, coordinate, Some( nextCell ) )
-    new Update( nextChain, nextCell, thisCell )
+    ???
   }
 
-  def link( to: Cell ): Update =
-  {
-    null
-  }
+  def isFull: Boolean = ???
+  def isAllLinked: Boolean = ???
 }
 
-class Marker( color: Color, coordinate: Coordinate, next: Option[Link] ) extends Link( color, coordinate, next )
+trait Linkable
+{
+  def position: Coordinate
+}
+case class Token( color: Color, coordinate: Coordinate ) extends Linkable
+{
+  def position = coordinate
+}
+case class Link( from: Linkable, direction: Direction ) extends Linkable
+{
+  def position = ???
+}
 
+sealed abstract class Direction
+case object Up extends Direction
+case object Down extends Direction
+case object Left extends Direction
+case object Right extends Direction
 
 case class Coordinate( x: Int, y: Int )
 case class Color( code: Int )
-
-class Update( remove: List[Coordinate], add: Cell, update: Cell )
-{
-  def apply( cells: Map[Coordinate, Cell] ): Map[Coordinate,Cell] =
-  {
-    ( cells -- remove )
-  }
-}
-
-// Empty - _ => Rien
-// Marker - Empty => Link
-//
