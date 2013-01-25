@@ -19,6 +19,12 @@ object GridFactory
   }
 }
 
+/*
+ * 0,0 is the bottom left corner
+ *
+ * @param width
+ * @param height
+ */
 case class Grid( tokens: List[Token], links: List[Link], width: Int, height: Int )
 {
   import scala.collection.JavaConversions._
