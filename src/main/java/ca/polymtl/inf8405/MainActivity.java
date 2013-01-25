@@ -13,7 +13,7 @@ public class MainActivity extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
-        Grid grid = GridFactory.EightByEight.level1();
+        Grid grid = GridFactory.heightByHeight().level1();
 
         for( Link link : grid.jlinks() )
         {
