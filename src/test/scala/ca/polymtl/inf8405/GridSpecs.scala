@@ -37,26 +37,46 @@ class GridSpecs extends FunSpec with ShouldMatchers
 
   describe("a breaking link")
   {
-    def t1c = Coordinate( 0, 0 )
-    def t2c = Coordinate( 1, 0 )
-
-    def grid = FastGrid( Grid(
-      List(
-        Token( Color( 1 ), t1c ),
-        Token( Color( 2 ), t2c )
-      ),
-      Nil,
-      100, 100
-    ), t1c )
-
-    //  2 4     4 3
-    //  1 3 >>  1 2
-    //  x o     x o
-
     it("should `cut` other links")
     {
+      def t1c = Coordinate( 0, 0 )
+      def t2c = Coordinate( 1, 0 )
+
+      def grid = FastGrid( Grid(
+        List(
+          Token( Color( 1 ), t1c ),
+          Token( Color( 2 ), t2c )
+        ),
+        Nil,
+        100, 100
+      ), t1c )
+
+      //  2 4     4 3
+      //  1 3 >>  1 2
+      //  x o     x o
+
       grid >> Up >> Up <*> t2c >> Up >> Up >> Left should be(
         grid >> Up <*> t2c >> Up >> Up >> Left
+      )
+    }
+
+    it("can start inside of a link")
+    {
+      // 3 2
+      //   1  >>  1 2
+      //   x      x
+
+      def markerPos = Coordinate( 1, 0 )
+      def breakPos = markerPos + Up
+
+      def grid = FastGrid( Grid(
+        List( Token( Color(1), markerPos ) ),
+        Nil,
+        100,100
+      ), markerPos)
+
+      grid >> Up >> Up >> Left <*> breakPos >> Right should be(
+        grid >> Up >> Right
       )
     }
   }
