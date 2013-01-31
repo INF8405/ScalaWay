@@ -1,7 +1,5 @@
 package ca.polymtl.inf8405.model
 
-import collection.immutable.Set
-
 object GridFactory
 {
   def sevenBySeven = SevenBySeven
@@ -27,85 +25,96 @@ object GridFactory
  * @param width
  * @param height
  */
-case class Grid(
-  cells: Map[Coordinate,Cell],
-  width: Int, height: Int )
+case class Grid( tokens: List[Token], links: List[Link], width: Int, height: Int )
 {
-  def link( from: Coordinate, to: Coordinate ): Grid =
+  import scala.collection.JavaConversions._
+
+  def jtokens: java.util.List[Token] = tokens
+  def jlinks: java.util.List[Link] = links
+
+  def link( from: Coordinate, direction: Direction ): Grid =
   {
-    def update( current: Cell, remove: List[Coordinate] ) =
+    if (isInvalidLink(from, direction)) this
+    else
     {
-      val removeSet = Set.empty ++ remove
+      val fromLinkable = allLinkables.find(_.position == from)
+      fromLinkable match
+      {
+        case Some(x) =>
+        {
+          val newLink = Link( x, direction )
+          links.map { link =>
+            val conflict = link.subLinks.find( _.position == newLink.position )
+            conflict match
+            {
+              case None => link
+              case Some( Link( from, _ ) ) => from
+            }
+          }
 
-      copy( cells = (
-        ( cells filterKeys( removeSet contains ) ) +
-        ( from -> current.link( to ) ) +
-        ( to -> Link(from, None ) )
-      ))
-    }
-
-    ( cells.get( from ), cells.get( to ) ) match
-    {
-      case ( Some( cell ), None ) =>
-      {
-        update(
-          cell,
-          followingLinksCoordinate( from )
-        )
+          val newLinks = links.filter( _.isInstanceOf[Link] ).map{
+            case l if l == fromLinkable => newLink
+            case l => l
+          }
+          Grid(tokens, newLinks, width, height)
+        }
+        case None => this
       }
-      case ( Some( cellFrom ), Some( Link( prev, _ ) ) ) =>
-      {
-        update(
-          cellFrom,
-          followingLinksCoordinate( from ) ++
-          followingLinksCoordinate( prev )
-        )
-      }
-      case ( Some( cellFrom ), Some( Marker( color, _ ) ) ) =>
-      {
-        this
-      }
-      case _ => this
     }
   }
 
-  def followingLinksCoordinate( coordinate: Coordinate ): List[Coordinate] =
+  def isFull: Boolean =
   {
-    cells.get( coordinate ).map{
-      case Link( _, Some( next ) ) => coordinate :: followingLinksCoordinate( next )
-      case Marker( _, Some( next ) ) => coordinate :: followingLinksCoordinate( next )
-      case _ => Nil
-    }.getOrElse( Nil )
+    val allCoords = List.tabulate(width, height){ case (x,y) => Coordinate(x, y) }.flatten
+    allCoords.forall( coordinate => allLinkables.exists( _.position == coordinate ) )
   }
-
-  def color( cell: Cell ): Option[Color] =
-  {
-    cell match
-    {
-      case Link( from, _ ) => cells get( from ) flatMap( color _ )
-      case Marker( color, _ ) => Some( color )
-    }
-  }
-
-  def isFull: Boolean = ???
   def isAllLinked: Boolean = ???
+  def allLinkables = tokens ++ links
+
+  def isInvalidLink( from: Coordinate, to: Direction ): Boolean = false // TODO
 }
 
-sealed abstract class Cell
+trait Linkable
 {
-  def to: Option[Coordinate]
-  def link( next: Coordinate ): Cell
+  def position: Coordinate
+}
+case class Token( color: Color, coordinate: Coordinate ) extends Linkable
+{
+  def position = coordinate
+}
+case class Link( from: Linkable, direction: Direction ) extends Linkable
+{
+  def position = from.position + direction
+  def subLinks: List[Link] = from match {
+    case x: Link => this :: x.subLinks
+    case x: Token => Nil
+  }
 }
 
-case class Link( from: Coordinate, to: Option[Coordinate] ) extends Cell
+sealed abstract class Direction
 {
-  def link( next: Coordinate ) = copy( to = Some( next ) )
+  def + ( coordinate: Coordinate ): Coordinate
 }
-
-case class Marker( color: Color, to: Option[Coordinate] = None ) extends Cell
+case object Up extends Direction
 {
-  def link( next: Coordinate ) = copy( to = Some( next ) )
+  def + ( coordinate: Coordinate ) = coordinate.copy( y = coordinate.y + 1 )
+}
+case object Down extends Direction
+{
+  def + ( coordinate: Coordinate ) = coordinate.copy( y = coordinate.y - 1 )
+}
+case object Left extends Direction
+{
+  def + ( coordinate: Coordinate ) = coordinate.copy( x = coordinate.x - 1 )
+}
+case object Right extends Direction
+{
+  def + ( coordinate: Coordinate ) = coordinate.copy( x = coordinate.x + 1 )
 }
 
 case class Coordinate( x: Int, y: Int )
+{
+  def +( direction: Direction ) = direction + this
+}
+
 case class Color( code: Int )
