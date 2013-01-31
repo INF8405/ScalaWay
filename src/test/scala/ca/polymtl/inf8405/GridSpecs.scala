@@ -7,6 +7,29 @@ import matchers.ShouldMatchers
 
 class GridSpecs extends FunSpec with ShouldMatchers
 {
+  describe("linking")
+  {
+    it("should creat the desire structure")
+    {
+      val tokenCoordinate = Coordinate( 0, 0 )
+      val red = Color(1) 
+      val grid = FastGrid( Grid(
+        Map( tokenCoordinate -> Marker( red ) ),
+        2, 2
+      ), tokenCoordinate )
+
+      ( grid >> Up >> Right >> Down ).grid should be
+      {
+        Grid( Map(
+          tokenCoordinate -> Marker( red, Some( Coordinate( 0, 1 ) ) ),
+          Coordinate( 0, 1 ) -> Link( tokenCoordinate, Some( Coordinate( 1, 1 ) ) ),
+          Coordinate( 1, 1 ) -> Link( Coordinate( 0, 1 ), Some( Coordinate( 1, 0 ) ) ),
+          Coordinate( 1, 0 ) -> Link( Coordinate( 1, 1 ), None )
+        ), 2, 2 )
+      }
+    }
+  }
+  
   describe("a self breaking link")
   {
     def tokenCoordinate = Coordinate( 40, 40 )
@@ -65,7 +88,7 @@ class GridSpecs extends FunSpec with ShouldMatchers
       //   x      x
 
       def markerPos = Coordinate( 1, 0 )
-      def breakPos = markerPos + Up
+      def breakPos = markerPos +: Up
 
       def grid = FastGrid( Grid(
         Map( markerPos -> Marker( Color(1) ) ),
@@ -113,6 +136,7 @@ class GridSpecs extends FunSpec with ShouldMatchers
   describe("minimal complete grid")
   {
     // r r
+
     val red = Color(1)
     val redPos1 = Coordinate(0,0)
     val grid = FastGrid( Grid( Map(
@@ -155,6 +179,24 @@ class GridSpecs extends FunSpec with ShouldMatchers
     }
   }
 
+  describe("full not linked")
+  {
+    // r r
+
+    val red = Color(1)
+    val redPos1 = Coordinate(0,0)
+    val grid = Grid( Map(
+      redPos1 -> Marker( red ),
+      Coordinate( 1, 0 ) -> Marker( red )
+    ), 2, 1)
+
+    it("should be like that")
+    {
+      assert( !grid.isAllLinked )
+      assert( grid.isFull )
+    }
+  }
+
   describe("an out of bound link")
   {
     it("should ignore linking and return unmodified grid")
@@ -164,17 +206,19 @@ class GridSpecs extends FunSpec with ShouldMatchers
 
       val red = Color(1)
       val rm1c = Coordinate( 0, 0 )
-      val redMarker1 = Token( red, rm1c )
-      val redMarker2 = Token( red, Coordinate( 1, 0 ) )
+      val rm2c = Coordinate( 1, 0 )
 
       val blue = Color(2)
       val bm2c = Coordinate( 1, 1 )
-      val blueMarker1 = Token( blue, Coordinate( 0, 1 ) )
-      val blueMarker2 = Token( blue, bm2c )
+      val bm1c = Coordinate( 0, 1 )
 
       val grid = Grid(
-        List( redMarker1, redMarker2, blueMarker1, blueMarker2 ),
-        Nil,
+        Map(
+          rm1c -> Marker( red ),
+          rm2c -> Marker( red ),
+          bm1c -> Marker( blue ),
+          bm2c -> Marker( blue )
+        ),
         2, 2
       )
 
@@ -194,32 +238,30 @@ class GridSpecs extends FunSpec with ShouldMatchers
  */
 case class FastGrid( grid: Grid, from: Coordinate )
 {
-  def >>( direction: Direction ) = FastGrid( grid.link( from, direction ), from + direction )
+  def >>( direction: Direction ) = {
+    val newPos = from +: direction
+    FastGrid( grid.link( from, newPos ), newPos )
+  }
   def <*>( newFrom: Coordinate ) = copy( from = newFrom )
 }
 
 sealed abstract class Direction
 {
-  def + ( coordinate: Coordinate ): Coordinate
+  def +: ( coordinate: Coordinate ): Coordinate
 }
 case object Up extends Direction
 {
-  def + ( coordinate: Coordinate ) = coordinate.copy( y = coordinate.y + 1 )
+  def +: ( coordinate: Coordinate ) = coordinate.copy( y = coordinate.y + 1 )
 }
 case object Down extends Direction
 {
-  def + ( coordinate: Coordinate ) = coordinate.copy( y = coordinate.y - 1 )
+  def +: ( coordinate: Coordinate ) = coordinate.copy( y = coordinate.y - 1 )
 }
 case object Left extends Direction
 {
-  def + ( coordinate: Coordinate ) = coordinate.copy( x = coordinate.x - 1 )
+  def +: ( coordinate: Coordinate ) = coordinate.copy( x = coordinate.x - 1 )
 }
 case object Right extends Direction
 {
-  def + ( coordinate: Coordinate ) = coordinate.copy( x = coordinate.x + 1 )
-}
-
-implicit class RichCoordinate( coordinate: Coordinate )
-{
-  def +( direction: Direction ) = direction + coordinate
+  def +: ( coordinate: Coordinate ) = coordinate.copy( x = coordinate.x + 1 )
 }
