@@ -21,7 +21,7 @@ class MainActivity extends Activity with TypedActivity
     // Debug.waitForDebugger()
 
     super.onCreate(bundle)
-    setContentView(R.layout.main)
+    setContentView( TR.layout.main.id )
 
     val gameview = findView( TR.gameview )
     gameview.setOnTouchListener( new GameController( gameview ) )

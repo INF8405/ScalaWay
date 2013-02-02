@@ -12,34 +12,36 @@ class GridSpecs extends FunSpec with ShouldMatchers
     it("should creat the desire structure")
     {
       val tokenCoordinate = Coordinate( 0, 0 )
-      val red = Color(1) 
+      val red = Color(1)
+      val token = Token(red, tokenCoordinate)
       val grid = FastGrid( Grid(
-        Map( tokenCoordinate -> Marker( red ) ),
-        2, 2
+        List( token ),
+        Nil, 2, 2
       ), tokenCoordinate )
 
       ( grid >> Up >> Right >> Down ).grid should be
       {
-        Grid( Map(
-          tokenCoordinate -> Marker( red, Some( Coordinate( 0, 1 ) ) ),
-          Coordinate( 0, 1 ) -> Link( tokenCoordinate, Some( Coordinate( 1, 1 ) ) ),
-          Coordinate( 1, 1 ) -> Link( Coordinate( 0, 1 ), Some( Coordinate( 1, 0 ) ) ),
-          Coordinate( 1, 0 ) -> Link( Coordinate( 1, 1 ), None )
-        ), 2, 2 )
+        Grid(
+          List( Token( red, tokenCoordinate ) ),
+          List( Link( Link( Link( token, Up ), Right ), Down )
+          ),
+          2, 2
+        )
       }
     }
   }
-  
+
   describe("a self breaking link")
   {
-    def tokenCoordinate = Coordinate( 40, 40 )
-
-    def grid = FastGrid( Grid(
-      Map( tokenCoordinate -> Marker( Color( 1 ) ) ),
-      100, 100
+    val tokenCoordinate = Coordinate( 1, 0 )
+    val red = Color(1)
+    val token = Token(red, tokenCoordinate)
+    val grid = FastGrid( Grid(
+      List( token ),
+      Nil, 2, 3
     ), tokenCoordinate )
 
-    it("breaks on marker")
+    it("breaks on a marker")
     {
       //  2 1       _ _
       //  3 x   >>  _ x
@@ -47,10 +49,10 @@ class GridSpecs extends FunSpec with ShouldMatchers
       grid >> Up >> Left >> Down >> Right should be( grid )
     }
 
-    it("breaks on link")
+    it("breaks on a link")
     {
       //  3 2       _ _
-      //  4 1   >>  _ 13
+      //  4 1   >>  _ 1
       //    x         x
 
       grid >> Up >> Up >> Left >> Down >> Right should be( grid >> Up )
@@ -61,23 +63,26 @@ class GridSpecs extends FunSpec with ShouldMatchers
   {
     it("should `cut` other links")
     {
-      def t1c = Coordinate( 0, 0 )
-      def t2c = Coordinate( 1, 0 )
+      val rtc = Coordinate( 0, 0 )
+      val red = Color(1)
+      val rt = Token(red, rtc)
 
-      def grid = FastGrid( Grid(
-        Map(
-          t1c -> Marker( Color( 1 ) ),
-          t2c -> Marker( Color( 2 ) )
-        ),
-        100, 100
-      ), t1c )
+      val btc = Coordinate( 1, 0 )
+      val blue = Color(2)
+      val bt = Token(blue, btc)
+
+
+      val grid = FastGrid( Grid(
+        List( rt, bt ),
+        Nil, 2, 2
+      ), rtc )
 
       //  2 4     4 3
       //  1 3 >>  1 2
       //  x o     x o
 
-      grid >> Up >> Up <*> t2c >> Up >> Up >> Left should be(
-        grid >> Up <*> t2c >> Up >> Up >> Left
+      grid >> Up >> Up <*> btc >> Up >> Up >> Left should be(
+        grid >> Up <*> btc >> Up >> Up >> Left
       )
     }
 
@@ -88,11 +93,12 @@ class GridSpecs extends FunSpec with ShouldMatchers
       //   x      x
 
       def markerPos = Coordinate( 1, 0 )
-      def breakPos = markerPos +: Up
+      def breakPos = markerPos + Up
 
       def grid = FastGrid( Grid(
-        Map( markerPos -> Marker( Color(1) ) ),
-        100,100
+        List( Token( Color(1), markerPos )),
+        Nil,
+        3,3
       ), markerPos)
 
       grid >> Up >> Up >> Left <*> breakPos >> Right should be(
@@ -115,12 +121,13 @@ class GridSpecs extends FunSpec with ShouldMatchers
 
 
     val grid = FastGrid( Grid(
-      Map(
-        redCoord1 -> Marker( red ),
-        Coordinate( 0, 2 ) -> Marker( red ),
-        blueCoord1 -> Marker( blue ),
-        Coordinate( 2, 1 ) -> Marker( blue )
+      List(
+        Token( red, redCoord1 ),
+        Token( red, Coordinate( 0, 2 ) ),
+        Token( blue, blueCoord1 ),
+        Token( blue, Coordinate( 2, 1 ) )
       ),
+      Nil,
       2, 2
     ), redCoord1)
 
@@ -139,10 +146,12 @@ class GridSpecs extends FunSpec with ShouldMatchers
 
     val red = Color(1)
     val redPos1 = Coordinate(0,0)
-    val grid = FastGrid( Grid( Map(
-        redPos1 -> Marker( red ),
-        Coordinate( 1, 0 ) -> Marker( red )
-      ), 2, 1),
+    val grid = FastGrid(
+      Grid(
+        List( Token( red, Coordinate( 1, 0 ) ) ),
+        Nil,
+        2, 1
+      ),
       redPos1
     )
 
@@ -159,14 +168,17 @@ class GridSpecs extends FunSpec with ShouldMatchers
   {
     //  _ _
     //  r r
-
-
     val red = Color(1)
     val redPos1 = Coordinate(0,0)
-    val grid = FastGrid( Grid( Map(
-      redPos1 -> Marker( red ),
-      Coordinate( 1, 0 ) -> Marker( red )
-    ), 2, 2),
+    val grid = FastGrid(
+      Grid(
+        List(
+          Token( red, redPos1 ),
+          Token( red, Coordinate( 1, 0 ) )
+        ),
+        Nil,
+        2, 2
+      ),
       redPos1
     )
 
@@ -182,13 +194,15 @@ class GridSpecs extends FunSpec with ShouldMatchers
   describe("full not linked")
   {
     // r r
-
     val red = Color(1)
     val redPos1 = Coordinate(0,0)
-    val grid = Grid( Map(
-      redPos1 -> Marker( red ),
-      Coordinate( 1, 0 ) -> Marker( red )
-    ), 2, 1)
+    val grid = Grid( List(
+      Token( red, redPos1 ),
+      Token( red, Coordinate( 1, 0  ) )
+      ),
+      Nil,
+      2, 1
+    )
 
     it("should be like that")
     {
@@ -213,12 +227,13 @@ class GridSpecs extends FunSpec with ShouldMatchers
       val bm1c = Coordinate( 0, 1 )
 
       val grid = Grid(
-        Map(
-          rm1c -> Marker( red ),
-          rm2c -> Marker( red ),
-          bm1c -> Marker( blue ),
-          bm2c -> Marker( blue )
+        List(
+          Token( red, rm1c ),
+          Token( red, rm2c ),
+          Token( blue, bm1c ),
+          Token( blue, bm2c  )
         ),
+        Nil,
         2, 2
       )
 
@@ -238,30 +253,8 @@ class GridSpecs extends FunSpec with ShouldMatchers
  */
 case class FastGrid( grid: Grid, from: Coordinate )
 {
-  def >>( direction: Direction ) = {
-    val newPos = from +: direction
-    FastGrid( grid.link( from, newPos ), newPos )
-  }
+  def >>( direction: Direction ) = FastGrid( grid.link( from, direction ), from + direction )
   def <*>( newFrom: Coordinate ) = copy( from = newFrom )
-}
 
-sealed abstract class Direction
-{
-  def +: ( coordinate: Coordinate ): Coordinate
-}
-case object Up extends Direction
-{
-  def +: ( coordinate: Coordinate ) = coordinate.copy( y = coordinate.y + 1 )
-}
-case object Down extends Direction
-{
-  def +: ( coordinate: Coordinate ) = coordinate.copy( y = coordinate.y - 1 )
-}
-case object Left extends Direction
-{
-  def +: ( coordinate: Coordinate ) = coordinate.copy( x = coordinate.x - 1 )
-}
-case object Right extends Direction
-{
-  def +: ( coordinate: Coordinate ) = coordinate.copy( x = coordinate.x + 1 )
+  override def toString = grid.toString
 }
