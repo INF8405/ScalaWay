@@ -51,6 +51,13 @@ case class Grid( tokens: List[Token], links: List[Link], size: Int )
   def jtokens: java.util.List[Token] = tokens
   def jlinks: java.util.List[Link] = links
 
+  def link( from: Coordinate, to: Coordinate ): Grid =
+  {
+    DirectionSet.values.find( from + _ == to ).
+      map( link( from, _ ) ).
+      getOrElse( this )
+  }
+
   def link( from: Coordinate, direction: Direction ): Grid =
   {
     if( isInvalidLink( from, direction ) ) this
@@ -151,6 +158,16 @@ case class Link( from: Linkable, direction: Direction ) extends Linkable
   def color = from.color
   def subLinks = this :: from.subLinks
   override def toString = direction.toString
+}
+
+object DirectionSet
+{
+  val values = Set(
+    Up,
+    Down,
+    Left,
+    Right
+  )
 }
 
 sealed abstract class Direction

@@ -7,17 +7,27 @@ import android.view.{WindowManager, View}
 import android.content.Context
 import android.graphics.{Point, Paint, Canvas, Color => AColor}
 import model.Coordinate
+import controller.GameController
+
 
 class DrawView( context: Context, size: Int ) extends View( context )
 {
+  setOnTouchListener( new GameController( this ) )
+
   val ( width, height ) = screenSize
   val GRID_SIZE = Math.min( width, height )
   val CELL_SIZE = GRID_SIZE / size
   val TOKEN_RADIUS = 3 * CELL_SIZE / 8
 
-  val model =
+  var model =
+  {
+    val ff =
     FastGrid( GridFactory.SevenBySeven.level1, Coordinate( 0, 1 ) ) >>
-    Right >> Right >> Right >> Down >> Down >> Down
+      Right >> Right >> Right >> Down >> Down >> Down
+
+    ff.grid
+  }
+
 
   val gridPaint = new Paint
   gridPaint.setColor( AColor.BLACK )
@@ -44,8 +54,8 @@ class DrawView( context: Context, size: Int ) extends View( context )
     def drawEmptyGrid()
     {
       for {
-        x <- 1 to model.grid.size
-        y <- 1 to model.grid.size }
+        x <- 1 to model.size
+        y <- 1 to model.size }
       {
         canvas.drawLine( CELL_SIZE * x, 0, CELL_SIZE * x, GRID_SIZE, gridPaint )
         canvas.drawLine( 0, CELL_SIZE * y, GRID_SIZE, CELL_SIZE * y, gridPaint )
@@ -54,7 +64,7 @@ class DrawView( context: Context, size: Int ) extends View( context )
 
     def drawLinks()
     {
-      for { link <- model.grid.links }
+      for { link <- model.links }
       {
         def accPosition( aLink: Linkable ) : ( Color, List[Coordinate] ) =
         {
@@ -101,7 +111,7 @@ class DrawView( context: Context, size: Int ) extends View( context )
     def drawTokens()
     {
       for {
-        token <- model.grid.tokens
+        token <- model.tokens
         color <- colorMap.get( token.color ) }
       {
         tokenPaint.setColor( color )
@@ -120,8 +130,8 @@ class DrawView( context: Context, size: Int ) extends View( context )
   def screenSize =
   {
     val wm = context.getSystemService(Context.WINDOW_SERVICE).asInstanceOf[WindowManager]
-    val display = wm.getDefaultDisplay()
-    var screenSize = new Point()
+    val display = wm.getDefaultDisplay
+    var screenSize = new Point
     display.getSize(screenSize)
     ( screenSize.x, screenSize.y )
   }
