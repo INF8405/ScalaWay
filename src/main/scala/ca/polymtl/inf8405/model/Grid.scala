@@ -7,8 +7,7 @@ object GridFactory
   val green = Color(3)
   val yellow = Color(4)
   val orange = Color(5)
-      
-  def sevenBySeven = SevenBySeven
+
   object SevenBySeven
   {
     def level1: Grid = 
@@ -30,7 +29,6 @@ object GridFactory
     def level3: Grid = ???
   }
 
-  def heightByHeight = EightByEight
   object EightByEight
   {
     def level1: Grid = ???
@@ -45,6 +43,7 @@ object GridFactory
  * @param width
  * @param height
  */
+
 case class Grid( tokens: List[Token], links: List[Link], width: Int, height: Int )
 {
   import scala.collection.JavaConversions._

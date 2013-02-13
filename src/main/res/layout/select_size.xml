@@ -1,0 +1,26 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:layout_gravity="center"
+                tools:context=".SelectSizeActivity" >
+
+    <Button
+            android:id="@+id/ButtonSize7"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="@string/button_size7"
+            android:onClick="selectSize7" />
+
+    <Button
+            android:id="@+id/ButtonSize8"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@id/ButtonSize7"
+            android:text="@string/button_size8"
+            android:onClick="selectSize8" />
+
+</RelativeLayout>

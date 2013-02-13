@@ -1,0 +1,4 @@
+class MainActivity extends Activity with TypedActivity
+
+import android.os.Debug
+Debug.waitForDebugger()
