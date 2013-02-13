@@ -135,17 +135,20 @@ case class Grid( tokens: List[Token], links: List[Link], size: Int )
 trait Linkable
 {
   def position: Coordinate
+  def color: Color
   def subLinks: List[Linkable]
 }
-case class Token( color: Color, coordinate: Coordinate ) extends Linkable
+case class Token( col: Color, coordinate: Coordinate ) extends Linkable
 {
   def position = coordinate
+  def color = col
   def subLinks = List(this)
-  override def toString = color.toString
+  override def toString = col.toString
 }
 case class Link( from: Linkable, direction: Direction ) extends Linkable
 {
   def position = from.position + direction
+  def color = from.color
   def subLinks = this :: from.subLinks
   override def toString = direction.toString
 }
@@ -156,12 +159,12 @@ sealed abstract class Direction
 }
 case object Up extends Direction
 {
-  def + ( coordinate: Coordinate ) = coordinate.copy( y = coordinate.y + 1 )
+  def + ( coordinate: Coordinate ) = coordinate.copy( y = coordinate.y - 1 )
   override def toString = "^"
 }
 case object Down extends Direction
 {
-  def + ( coordinate: Coordinate ) = coordinate.copy( y = coordinate.y - 1 )
+  def + ( coordinate: Coordinate ) = coordinate.copy( y = coordinate.y + 1 )
   override def toString = "v"
 }
 case object Left extends Direction
@@ -183,4 +186,17 @@ case class Coordinate( x: Int, y: Int )
 case class Color( code: Int )
 {
   override def toString = code.toString
+}
+
+
+// TODO: Put back in test
+/*
+ * Starting from a position we can compose ( >> ) and set a new starting position ( <*> )
+ */
+case class FastGrid( grid: Grid, from: Coordinate )
+{
+  def >>( direction: Direction ) = FastGrid( grid.link( from, direction ), from + direction )
+  def <*>( newFrom: Coordinate ) = copy( from = newFrom )
+
+  override def toString = grid.toString
 }

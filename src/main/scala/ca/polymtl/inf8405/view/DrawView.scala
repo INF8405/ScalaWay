@@ -1,11 +1,12 @@
 package ca.polymtl.inf8405
 package view
 
-import model.{GridFactory, Grid}
+import model._
 
 import android.view.{WindowManager, View}
 import android.content.Context
-import android.graphics.{Point, Paint, Canvas, Color}
+import android.graphics.{Point, Paint, Canvas, Color => AColor}
+import model.Coordinate
 
 class DrawView( context: Context, size: Int ) extends View( context )
 {
@@ -14,32 +15,37 @@ class DrawView( context: Context, size: Int ) extends View( context )
   val CELL_SIZE = GRID_SIZE / size
   val TOKEN_RADIUS = 3 * CELL_SIZE / 8
 
-  val model = GridFactory.SevenBySeven.level1
+  val model =
+    FastGrid( GridFactory.SevenBySeven.level1, Coordinate( 0, 1 ) ) >>
+    Right >> Right >> Right >> Down >> Down >> Down
 
   val gridPaint = new Paint
-  gridPaint.setColor( Color.BLACK )
+  gridPaint.setColor( AColor.BLACK )
   gridPaint.setStrokeWidth( 5 )
 
   val tokenPaint = new Paint
   tokenPaint.setStrokeWidth( 1 )
 
+  val linkPaint = new Paint
+  linkPaint.setStrokeWidth( 2 * TOKEN_RADIUS )
+
   val colorMap = Map(
-    GridFactory.red -> Color.RED,
-    GridFactory.blue -> Color.BLUE,
-    GridFactory.orange -> Color.rgb( 255, 204, 0 ),
-    GridFactory.green -> Color.GREEN,
-    GridFactory.yellow -> Color.YELLOW
+    GridFactory.red -> AColor.RED,
+    GridFactory.blue -> AColor.BLUE,
+    GridFactory.orange -> AColor.rgb( 255, 204, 0 ),
+    GridFactory.green -> AColor.GREEN,
+    GridFactory.yellow -> AColor.YELLOW
   )
 
-  setBackgroundColor( Color.WHITE )
+  setBackgroundColor( AColor.WHITE )
 
   override def onDraw( canvas: Canvas )
   {
     def drawEmptyGrid()
     {
       for {
-        x <- 1 to model.size
-        y <- 1 to model.size }
+        x <- 1 to model.grid.size
+        y <- 1 to model.grid.size }
       {
         canvas.drawLine( CELL_SIZE * x, 0, CELL_SIZE * x, GRID_SIZE, gridPaint )
         canvas.drawLine( 0, CELL_SIZE * y, GRID_SIZE, CELL_SIZE * y, gridPaint )
@@ -48,15 +54,54 @@ class DrawView( context: Context, size: Int ) extends View( context )
 
     def drawLinks()
     {
+      for { link <- model.grid.links }
+      {
+        def accPosition( aLink: Linkable ) : ( Color, List[Coordinate] ) =
+        {
+          aLink match
+          {
+            case Token( col, pos ) => ( col, List( pos ) )
+            case Link( from, dir ) =>
+            {
+              val ( col, pos :: tail ) = accPosition( from )
+              ( col, pos + dir :: pos :: tail )
+            }
+          }
+        }
 
+        val ( color, links ) = accPosition( link )
+
+        def draw( color: Int, links: List[Coordinate] )
+        {
+          links match
+          {
+            case c1 :: c2 :: tail =>
+            {
+              val x1 = c1.x * CELL_SIZE + CELL_SIZE / 2
+              val y1 = c1.y * CELL_SIZE + CELL_SIZE / 2
+
+              val x2 = c2.x * CELL_SIZE + CELL_SIZE / 2
+              val y2 = c2.y * CELL_SIZE + CELL_SIZE / 2
+
+              linkPaint.setColor( color )
+              tokenPaint.setColor( color )
+              canvas.drawLine( x1, y1, x2, y2, linkPaint )
+              canvas.drawCircle( x1, y1, TOKEN_RADIUS, tokenPaint )
+
+              draw( color, c2 :: tail )
+            }
+            case _ :: Nil => ()
+          }
+        }
+
+        for{ c <- colorMap.get( color ) } { draw( c, links ) }
+      }
     }
 
     def drawTokens()
     {
-      tokenPaint.setColor( Color.RED )
-
       for {
-        token <- model.tokens
+        token <- model.grid.tokens
         color <- colorMap.get( token.color ) }
       {
         tokenPaint.setColor( color )
