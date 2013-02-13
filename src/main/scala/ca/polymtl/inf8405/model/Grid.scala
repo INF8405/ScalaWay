@@ -13,17 +13,17 @@ object GridFactory
     def level1: Grid = 
     {
       Grid( List(
-        Token( red,     Coordinate( 2, 4 ) ),
+        Token( red,     Coordinate( 2, 2 ) ),
         Token( red,     Coordinate( 4, 3 ) ),
-        Token( blue,    Coordinate( 0, 0 ) ),
-        Token( blue,    Coordinate( 0, 5 ) ),
-        Token( green,   Coordinate( 0, 1 ) ),
-        Token( green,   Coordinate( 5, 1 ) ),
-        Token( yellow,  Coordinate( 2, 2 ) ),
-        Token( yellow,  Coordinate( 4, 1 ) ),
-        Token( orange,  Coordinate( 1, 1 ) ),
-        Token( orange,  Coordinate( 4, 2 ) )
-      ), Nil, 7, 7 )
+        Token( blue,    Coordinate( 0, 1 ) ),
+        Token( blue,    Coordinate( 0, 6 ) ),
+        Token( green,   Coordinate( 0, 5 ) ),
+        Token( green,   Coordinate( 5, 5 ) ),
+        Token( yellow,  Coordinate( 2, 4 ) ),
+        Token( yellow,  Coordinate( 4, 5 ) ),
+        Token( orange,  Coordinate( 1, 5 ) ),
+        Token( orange,  Coordinate( 4, 4 ) )
+      ), Nil, 7 )
     }
     def level2: Grid = ???
     def level3: Grid = ???
@@ -44,7 +44,7 @@ object GridFactory
  * @param height
  */
 
-case class Grid( tokens: List[Token], links: List[Link], width: Int, height: Int )
+case class Grid( tokens: List[Token], links: List[Link], size: Int )
 {
   import scala.collection.JavaConversions._
 
@@ -98,14 +98,14 @@ case class Grid( tokens: List[Token], links: List[Link], width: Int, height: Int
             if( addNewLink ) newLink :: reducedLink.filter( _ != fromLinkable )
             else reducedLink.filter( _ != fromLinkable )
 
-          Grid( tokens, newLinks, width, height )
+          Grid( tokens, newLinks, size )
         }
         case None => this
       }
     }
   }
 
-  def coords = List.tabulate(width, height){ case (x,y) => Coordinate(x, y) } 
+  def coords = List.tabulate(size,size){ case (x,y) => Coordinate(x, y) }
 
   def isFull: Boolean =
   {
