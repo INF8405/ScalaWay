@@ -60,6 +60,8 @@ case class Grid( tokens: List[Token], links: List[Link], size: Int )
 
   def link( from: Coordinate, direction: Direction ): Grid =
   {
+
+
     if( isInvalidLink( from, direction ) ) this
     else
     {
@@ -71,7 +73,7 @@ case class Grid( tokens: List[Token], links: List[Link], size: Int )
           val newLink = Link( fromLinkable, direction )
           val mappedLinks = links.map { link =>
             
-            val conflict = link.subLinks.find( _.position == newLink.position )
+            val conflict = link.subLinkables.find( _.position == newLink.position )
 
             conflict match
             {
@@ -96,16 +98,13 @@ case class Grid( tokens: List[Token], links: List[Link], size: Int )
             }
           }
 
-          val reducedLink = mappedLinks.foldRight( List.empty[Link] ){ 
-            case( Some( link ), acc ) => link :: acc
-            case( _, acc ) => acc
-          }
-          
+          val reducedLink = for ( link <- mappedLinks if !link.isEmpty ) yield link.get
+
           val newLinks = 
-            if( addNewLink ) newLink :: reducedLink.filter( _ != fromLinkable )
+            if( addNewLink ) newLink :: reducedLink.filter( _.subLinks.exists( _.from == fromLinkable ) )
             else reducedLink.filter( _ != fromLinkable )
 
-          Grid( tokens, newLinks, size )
+          this.copy( links = newLinks )
         }
         case None => this
       }
@@ -143,19 +142,22 @@ trait Linkable
 {
   def position: Coordinate
   def color: Color
-  def subLinks: List[Linkable]
+  def subLinkables: List[Linkable]
+  def subLinks: List[Link]
 }
 case class Token( col: Color, coordinate: Coordinate ) extends Linkable
 {
   def position = coordinate
   def color = col
-  def subLinks = List(this)
-  override def toString = col.toString
+  def subLinkables = List(this)
+  def subLinks = Nil
+  override def toString = col.toString + " " + coordinate.toString
 }
 case class Link( from: Linkable, direction: Direction ) extends Linkable
 {
   def position = from.position + direction
   def color = from.color
+  def subLinkables = this :: from.subLinkables
   def subLinks = this :: from.subLinks
   override def toString = direction.toString
 }
@@ -198,6 +200,7 @@ case object Right extends Direction
 case class Coordinate( x: Int, y: Int )
 {
   def +( direction: Direction ) = direction + this
+  override def toString = s"[$x $y]"
 }
 
 case class Color( code: Int )

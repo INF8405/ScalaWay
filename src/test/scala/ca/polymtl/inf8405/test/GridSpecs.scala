@@ -89,12 +89,12 @@ class GridSpecs extends FunSpec with ShouldMatchers
 
     it("can start inside of a link")
     {
-      // 3 2
-      //   1  >>  1 2
       //   x      x
+      //   1  >>  1 2
+      // 3 2
 
       def markerPos = Coordinate( 1, 0 )
-      def breakPos = markerPos + Up
+      def breakPos = markerPos + Down
 
       def grid = FastGrid( Grid(
         List( Token( Color(1), markerPos )),
@@ -102,8 +102,8 @@ class GridSpecs extends FunSpec with ShouldMatchers
         3
       ), markerPos)
 
-      grid >> Up >> Up >> Left <*> breakPos >> Right should be(
-        grid >> Up >> Right
+      grid >> Down >> Down >> Left <*> breakPos >> Right should be(
+        grid >> Down >> Right
       )
     }
   }
@@ -141,34 +141,38 @@ class GridSpecs extends FunSpec with ShouldMatchers
     }
   }
 
-// TODO FIx
-//  describe("minimal complete grid")
-//  {
-//    // r r
-//    // r r
-//
-//    val red = Color(1)
-//    val redPos1 = Coordinate(0,0)
-//    val redPos2 = Coordinate(1,0)
-//    val grid = FastGrid(
-//      Grid(
-//        List(
-//          Token( red, redPos1 ),
-//          Token( red, Coordinate( 1, 0 ) ) ),
-//        Nil,
-//        2
-//      ),
-//      redPos1
-//    )
-//
-//    val solvedGrid = ( grid >> Right ).grid
-//
-//    it("should be like that")
-//    {
-//      assert( solvedGrid.isAllLinked )
-//      assert( solvedGrid.isFull )
-//    }
-//  }
+
+  describe("minimal complete grid")
+  {
+    // r1 r2
+    // b1 b2
+
+    val red = Color(1)
+    val blue = Color(2)
+    val redPos1 = Coordinate(0,0)
+    val bluePos1 = Coordinate(0,1)
+    val grid = FastGrid(
+      Grid(
+        List(
+          Token( red, redPos1 ),              // r1
+          Token( red, bluePos1 ),             // b1
+          Token( red, Coordinate( 1, 0 ) ),   // r2
+          Token( red, Coordinate( 1, 1 ) )    // b2
+        ),
+        links = Nil,
+        2
+      ),
+      redPos1
+    )
+
+    val solvedGrid = ( grid >> Right <*> bluePos1 >> Right ).grid
+
+    it("should be like that")
+    {
+      assert( solvedGrid.isAllLinked )
+      assert( solvedGrid.isFull )
+    }
+  }
 
   describe("a non-full-allLinked grid")
   {
@@ -197,26 +201,38 @@ class GridSpecs extends FunSpec with ShouldMatchers
     }
   }
 
-// TODO: Fix
-//  describe("full not linked")
-//  {
-//    // r r
-//    val red = Color(1)
-//    val redPos1 = Coordinate(0,0)
-//    val grid = Grid( List(
-//      Token( red, redPos1 ),
-//      Token( red, Coordinate( 1, 0  ) )
-//      ),
-//      Nil,
-//      2
-//    )
-//
-//    it("should be like that")
-//    {
-//      assert( !grid.isAllLinked )
-//      assert( grid.isFull )
-//    }
-//  }
+
+  describe("full not linked")
+  {
+    // r1 r2
+    // b1 b2
+
+    val red = Color(1)
+    val blue = Color(2)
+    val redPos1 = Coordinate(0,0)
+    val bluePos1 = Coordinate(0,1)
+    val grid = FastGrid(
+      Grid(
+        List(
+          Token( red, redPos1 ),              // r1
+          Token( red, bluePos1 ),             // b1
+          Token( red, Coordinate( 1, 0 ) ),   // r2
+          Token( red, Coordinate( 1, 1 ) )    // b2
+        ),
+        links = Nil,
+        2
+      ),
+      redPos1
+    )
+
+    val solvedGrid = ( grid >> Right <*> bluePos1 ).grid
+
+    it("should be like that")
+    {
+      assert( !solvedGrid.isAllLinked )
+      assert( solvedGrid.isFull )
+    }
+  }
 
   describe("an out of bound link")
   {
