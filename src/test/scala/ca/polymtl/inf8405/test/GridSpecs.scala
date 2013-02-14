@@ -10,7 +10,7 @@ class GridSpecs extends FunSpec with ShouldMatchers
 {
   describe("linking")
   {
-    it("should creat the desire structure")
+    it("should create the desire structure")
     {
       val tokenCoordinate = Coordinate( 0, 0 )
       val red = Color(1)
@@ -20,11 +20,11 @@ class GridSpecs extends FunSpec with ShouldMatchers
         Nil, 2
       ), tokenCoordinate )
 
-      ( grid >> Up >> Right >> Down ).grid should be
+      ( grid >> Down >> Right >> Up ).grid should be
       {
         Grid(
           List( Token( red, tokenCoordinate ) ),
-          List( Link( Link( Link( token, Up ), Right ), Down )
+          List( Link( Link( Link( token, Down ), Right ), Up )
           ),
           2
         )
@@ -105,6 +105,51 @@ class GridSpecs extends FunSpec with ShouldMatchers
       grid >> Down >> Down >> Left <*> breakPos >> Right should be(
         grid >> Down >> Right
       )
+    }
+  }
+
+  describe("a end link")
+  {
+    it("should link a link to a token")
+    {
+      val t1 = Token( Color( 1 ), Coordinate( 0, 0 ) )
+      val t2 = Token( Color( 1 ), Coordinate( 1, 0 ) )
+
+      assert( Link( t1, Right ).isEnd( t2 ) )
+    }
+
+    it("shoul not link if token have different colors")
+    {
+      val t1 = Token( Color( 1 ), Coordinate( 0, 0 ) )
+      val t2 = Token( Color( 2 ), Coordinate( 1, 0 ) )
+
+      assert( !Link( t1, Right ).isEnd( t2 ) )
+    }
+
+    it("should link a link to a link")
+    {
+      val t1 = Token( Color( 1 ), Coordinate( 0, 0 ) )
+      val t2 = Token( Color( 1 ), Coordinate( 2, 2 ) )
+
+      val l1 = Link( Link( t1, Down ), Down )
+      val l2 = Link( Link( t2, Left ), Left )
+
+      assert( l1.isEnd( l2 ) )
+    }
+
+    it("should link a link to a link in a grid")
+    {
+      val red = Color(1)
+      val t1p = Coordinate( 0, 0 )
+      val t1 = Token( red, t1p )
+      val t2p = Coordinate( 1, 0 )
+      val t2= Token( red, t2p )
+
+      val fg = FastGrid( Grid( List( t1, t2 ), Nil, 3 ), t1p )
+
+      fg >> Down >> Right >> Right <*> t2p >> Down should be {
+        fg <*> t2p >> Down >> Left >> Up
+      }
     }
   }
 

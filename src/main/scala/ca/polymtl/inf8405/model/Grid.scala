@@ -60,53 +60,47 @@ case class Grid( tokens: List[Token], links: List[Link], size: Int )
 
   def link( from: Coordinate, direction: Direction ): Grid =
   {
-
-
     if( isInvalidLink( from, direction ) ) this
     else
     {
-      allLinkables.find( _.position == from ) match
+      val to = from + direction
+
+      /**
+       * Iterates links and maybe find the full segment and the intersection at a given position
+       * @param position
+       * @return ( full segment, intersection )
+       */
+      def findLinkableAndIntersection( position: Coordinate ): Option[( Linkable, Linkable )] =
       {
-        case Some( fromLinkable ) =>
+        val intersections =
+        for {
+          linkable <- allLinkables
+          subLink <- linkable.subLinkables if subLink.position == position
+        } yield ( linkable, subLink )
+
+        intersections.headOption
+      }
+
+      ( findLinkableAndIntersection( from ), findLinkableAndIntersection( to ) ) match
+      {
+        case ( Some( ( fromLink, fromIntersect ) ), Some( ( toLink, toIntersect ) ) ) =>
         {
-          var addNewLink = true
-          val newLink = Link( fromLinkable, direction )
-          val mappedLinks = links.map { link =>
-            
-            val conflict = link.subLinkables.find( _.position == newLink.position )
-
-            conflict match
-            {
-              case None => Some( link )
-              case Some( c @ Link( from: Link, _ ) ) => 
-              {
-                val ourSelf = fromLinkable == link
-                addNewLink = !ourSelf
-
-                if( ourSelf ) Some( c )
-                else Some( from )
-              }
-              case Some( c @ Link( from: Token, _ ) ) =>
-              {
-                val ourSelf = fromLinkable == link
-                addNewLink = !ourSelf
-
-                if( ourSelf ) Some( c )
-                else None
-              }
-              case _ => addNewLink = fromLinkable != link; None
-            }
+          if ( fromIntersect.isEnd( toIntersect ) )
+          {
+            // put two links together
+            val newLink = Link( fromIntersect, direction ) + toIntersect
+            this.copy( links = newLink :: links.filter( l => !(l == fromLink || l == toLink ) ) )
           }
-
-          val reducedLink = for ( link <- mappedLinks if !link.isEmpty ) yield link.get
-
-          val newLinks = 
-            if( addNewLink ) newLink :: reducedLink.filter( _.subLinks.exists( _.from == fromLinkable ) )
-            else reducedLink.filter( _ != fromLinkable )
-
-          this.copy( links = newLinks )
+          else
+          {
+            this
+          }
         }
-        case None => this
+        case ( Some( ( fromLink, fromIntersect ) ), None ) =>
+        {
+          this.copy( links = Link( fromIntersect, direction ) :: links.filter( _ != fromLink ) )
+        }
+        case _ => this
       }
     }
   }
@@ -144,6 +138,10 @@ trait Linkable
   def color: Color
   def subLinkables: List[Linkable]
   def subLinks: List[Link]
+  def isEnd( linkable: Linkable ): Boolean
+  def isEnd( token: Token ): Boolean
+
+  def +( other: Linkable ): Link
 }
 case class Token( col: Color, coordinate: Coordinate ) extends Linkable
 {
@@ -151,6 +149,11 @@ case class Token( col: Color, coordinate: Coordinate ) extends Linkable
   def color = col
   def subLinkables = List(this)
   def subLinks = Nil
+  def isEnd( linkable: Linkable ) = linkable.isEnd( this )
+  def isEnd( token: Token ) = this != token && token.color == col
+
+  def +( other: Linkable ) = other + this
+
   override def toString = col.toString + " " + coordinate.toString
 }
 case class Link( from: Linkable, direction: Direction ) extends Linkable
@@ -159,7 +162,18 @@ case class Link( from: Linkable, direction: Direction ) extends Linkable
   def color = from.color
   def subLinkables = this :: from.subLinkables
   def subLinks = this :: from.subLinks
-  override def toString = direction.toString
+  def isEnd( linkable: Linkable ) = from.isEnd( linkable )
+  def isEnd( token: Token ) = from.isEnd( token )
+  override def toString = from.toString + " " + direction.toString
+
+  def +( other: Linkable ) =
+  {
+    other match
+    {
+      case a: Token => this
+      case Link( f, d ) => Link( this, d.neg ) + f
+    }
+  }
 }
 
 object DirectionSet
@@ -175,24 +189,29 @@ object DirectionSet
 sealed abstract class Direction
 {
   def + ( coordinate: Coordinate ): Coordinate
+  def neg : Direction
 }
 case object Up extends Direction
 {
+  def neg = Down
   def + ( coordinate: Coordinate ) = coordinate.copy( y = coordinate.y - 1 )
   override def toString = "^"
 }
 case object Down extends Direction
 {
+  def neg = Up
   def + ( coordinate: Coordinate ) = coordinate.copy( y = coordinate.y + 1 )
   override def toString = "v"
 }
 case object Left extends Direction
 {
+  def neg = Right
   def + ( coordinate: Coordinate ) = coordinate.copy( x = coordinate.x - 1 )
   override def toString = "<"
 }
 case object Right extends Direction
 {
+  def neg = Left
   def + ( coordinate: Coordinate ) = coordinate.copy( x = coordinate.x + 1 )
   override def toString = ">"
 }
@@ -218,5 +237,17 @@ case class FastGrid( grid: Grid, from: Coordinate )
   def >>( direction: Direction ) = FastGrid( grid.link( from, direction ), from + direction )
   def <*>( newFrom: Coordinate ) = copy( from = newFrom )
 
+  override def equals( other: Any ) =
+  {
+    if( other == null ) false
+    else
+    {
+      other match
+      {
+        case FastGrid( otherGrid, _ ) => grid == otherGrid
+        case _ => false
+      }
+    }
+  }
   override def toString = grid.toString
 }
