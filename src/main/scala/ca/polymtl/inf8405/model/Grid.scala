@@ -1,5 +1,7 @@
 package ca.polymtl.inf8405.model
 
+import collection.SetLike
+
 object GridFactory
 {
   val red = Color(1)
@@ -12,7 +14,7 @@ object GridFactory
   {
     def level1: Grid = 
     {
-      Grid( List(
+      Grid( Set(
         Token( red,     Coordinate( 2, 2 ) ),
         Token( red,     Coordinate( 4, 3 ) ),
         Token( blue,    Coordinate( 0, 1 ) ),
@@ -23,7 +25,7 @@ object GridFactory
         Token( yellow,  Coordinate( 4, 5 ) ),
         Token( orange,  Coordinate( 1, 5 ) ),
         Token( orange,  Coordinate( 4, 4 ) )
-      ), Nil, 7 )
+      ), Set(), 7 )
     }
     def level2: Grid = ???
     def level3: Grid = ???
@@ -43,14 +45,36 @@ object GridFactory
  * @param width
  * @param height
  */
+import UnsafeSet._
 
-case class Grid( tokens: List[Token], links: List[Link], size: Int )
+object UnsafeSet
 {
-  import scala.collection.JavaConversions._
+  implicit def toUnsafeSet( set: Set[Link] ) = new UnsafeSet( set )
+}
 
-  def jtokens: java.util.List[Token] = tokens
-  def jlinks: java.util.List[Link] = links
+class UnsafeSet( set: Set[Link] )
+{
+  def -( other: Linkable ):Set[Link] =
+  {
+    other match
+    {
+      case link: Link => set - link
+      case _ => set
+    }
+  }
 
+  def +( other: Linkable ):Set[Link] =
+  {
+    other match
+    {
+      case link: Link => set + link
+      case _ => set
+    }
+  }
+}
+
+case class Grid( tokens: Set[Token], links: Set[Link], size: Int )
+{
   def link( from: Coordinate, to: Coordinate ): Grid =
   {
     DirectionSet.values.find( from + _ == to ).
@@ -72,13 +96,28 @@ case class Grid( tokens: List[Token], links: List[Link], size: Int )
        */
       def findLinkableAndIntersection( position: Coordinate ): Option[( Linkable, Linkable )] =
       {
-        val intersections =
-        for {
-          linkable <- allLinkables
-          subLink <- linkable.subLinkables if subLink.position == position
-        } yield ( linkable, subLink )
+        // There is three cases:
+        // * A link contains a Token
+        // * A token is alone
+        // * There is nothing
 
-        intersections.headOption
+        val intersectionsLinks =
+        for {
+          link <- links
+          subLink <- link.subLinkables if subLink.position == position
+        } yield ( link, subLink )
+
+        if ( intersectionsLinks.isEmpty )
+        {
+          tokens.
+            filter( _.position == position ).
+            map( t => ( t, t ) ).
+            headOption
+        }
+        else
+        {
+          intersectionsLinks.headOption
+        }
       }
 
       ( findLinkableAndIntersection( from ), findLinkableAndIntersection( to ) ) match
@@ -89,16 +128,33 @@ case class Grid( tokens: List[Token], links: List[Link], size: Int )
           {
             // put two links together
             val newLink = Link( fromIntersect, direction ) + toIntersect
-            this.copy( links = newLink :: links.filter( l => !(l == fromLink || l == toLink ) ) )
+            this.copy( links = links - fromLink - toLink + newLink )
           }
           else
           {
-            this
+            if( fromLink == toLink )
+            {
+              this.copy( links = links - fromLink + toIntersect )
+            }
+            else
+            {
+              // it's a cut
+              toIntersect match
+              {
+                case a: Token => this       // Hit different token > Nothing happens
+                case Link( linkable, _ ) =>
+                {
+                  this.copy( links = ( links - fromLink - toLink + Link( fromIntersect, direction ) ) + linkable )
+                }
+                case _ => this
+              }
+            }
+
           }
         }
         case ( Some( ( fromLink, fromIntersect ) ), None ) =>
         {
-          this.copy( links = Link( fromIntersect, direction ) :: links.filter( _ != fromLink ) )
+          this.copy( links = ( links - fromLink ) + Link( fromIntersect, direction ) )
         }
         case _ => this
       }
@@ -109,27 +165,24 @@ case class Grid( tokens: List[Token], links: List[Link], size: Int )
 
   def isFull: Boolean =
   {
+    val allLinkables = links ++ tokens
     coords.flatten.forall( coordinate => allLinkables.exists( _.position == coordinate ) )
   }
-  def isAllLinked: Boolean = ???
-  def allLinkables = tokens ++ links
+  def isAllLinked: Boolean =
+  {
+    tokens.groupBy( _.color ).forall{ case ( color, tokens ) => {
+      tokens.exists( t => links.exists( _.isEnd( t ) ) )
+    }}
+  }
 
-  def isInvalidLink( from: Coordinate, to: Direction ): Boolean = false // TODO
+  def isInvalidLink( from: Coordinate, to: Direction ): Boolean =
+  {
+    val toCoord = from + to
+    val bounds = 0 until size
 
-  // override def toString = 
-  // {
-  //   val out = for{
-  //     column <- coords
-  //     line <- column
-  //   } yield allLinkables.find( _.position == line ) match
-  //     {
-  //       case Some( cell ) => cell.toString
-  //       case None => " "
-  //     }
-
-  //   val out2 = for { l <- out } yield l.mkString( " " )
-  //   out2.mkString( "\n" )
-  // }
+    ! ( bounds.contains( toCoord.x ) &&
+        bounds.contains( toCoord.y ) )
+  }
 }
 
 trait Linkable
@@ -234,7 +287,11 @@ case class Color( code: Int )
  */
 case class FastGrid( grid: Grid, from: Coordinate )
 {
-  def >>( direction: Direction ) = FastGrid( grid.link( from, direction ), from + direction )
+  def >>( direction: Direction ) = {
+    val newGrid = grid.link( from, direction )
+    val newPosition = if (newGrid == grid) from else from + direction
+    FastGrid( newGrid, newPosition )
+  }
   def <*>( newFrom: Coordinate ) = copy( from = newFrom )
 
   override def equals( other: Any ) =

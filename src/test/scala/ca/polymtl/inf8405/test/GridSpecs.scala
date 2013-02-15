@@ -16,15 +16,15 @@ class GridSpecs extends FunSpec with ShouldMatchers
       val red = Color(1)
       val token = Token(red, tokenCoordinate)
       val grid = FastGrid( Grid(
-        List( token ),
-        Nil, 2
+        Set( token ),
+        Set(), 2
       ), tokenCoordinate )
 
       ( grid >> Down >> Right >> Up ).grid should be
       {
         Grid(
-          List( Token( red, tokenCoordinate ) ),
-          List( Link( Link( Link( token, Down ), Right ), Up )
+          Set( Token( red, tokenCoordinate ) ),
+          Set( Link( Link( Link( token, Down ), Right ), Up )
           ),
           2
         )
@@ -34,12 +34,12 @@ class GridSpecs extends FunSpec with ShouldMatchers
 
   describe("a self breaking link")
   {
-    val tokenCoordinate = Coordinate( 1, 0 )
+    val tokenCoordinate = Coordinate( 1, 2 )
     val red = Color(1)
     val token = Token(red, tokenCoordinate)
     val grid = FastGrid( Grid(
-      List( token ),
-      Nil, 3
+      Set( token ),
+      Set(), 3
     ), tokenCoordinate )
 
     it("breaks on a marker")
@@ -64,23 +64,23 @@ class GridSpecs extends FunSpec with ShouldMatchers
   {
     it("should `cut` other links")
     {
-      val rtc = Coordinate( 0, 0 )
+      val rtc = Coordinate( 0, 2 )
       val red = Color(1)
       val rt = Token(red, rtc)
 
-      val btc = Coordinate( 1, 0 )
+      val btc = Coordinate( 1, 2 )
       val blue = Color(2)
       val bt = Token(blue, btc)
 
 
       val grid = FastGrid( Grid(
-        List( rt, bt ),
-        Nil, 3
+        Set( rt, bt ),
+        Set(), 3
       ), rtc )
 
       //  2 4     4 3
       //  1 3 >>  1 2
-      //  x o     x o
+      //  r b     r b
 
       grid >> Up >> Up <*> btc >> Up >> Up >> Left should be(
         grid >> Up <*> btc >> Up >> Up >> Left
@@ -97,8 +97,8 @@ class GridSpecs extends FunSpec with ShouldMatchers
       def breakPos = markerPos + Down
 
       def grid = FastGrid( Grid(
-        List( Token( Color(1), markerPos )),
-        Nil,
+        Set( Token( Color(1), markerPos )),
+        Set(),
         3
       ), markerPos)
 
@@ -110,6 +110,22 @@ class GridSpecs extends FunSpec with ShouldMatchers
 
   describe("a end link")
   {
+    it("should not be an end link if not linked")
+    {
+      val t1 = Token( Color( 1 ), Coordinate( 0, 0 ) )
+      val t2 = Token( Color( 1 ), Coordinate( 1, 0 ) )
+
+      assert( ! t1.isEnd( t2 ) )
+    }
+
+    it("should not be an end link if not linked far away")
+    {
+      val t1 = Token( Color( 1 ), Coordinate( 0, 0 ) )
+      val t2 = Token( Color( 1 ), Coordinate( 5, 5 ) )
+
+      assert( ! t1.isEnd( t2 ) )
+    }
+
     it("should link a link to a token")
     {
       val t1 = Token( Color( 1 ), Coordinate( 0, 0 ) )
@@ -126,7 +142,7 @@ class GridSpecs extends FunSpec with ShouldMatchers
       assert( !Link( t1, Right ).isEnd( t2 ) )
     }
 
-    it("should link a link to a link")
+    it("should be an end link if a linkable links to an other linkable")
     {
       val t1 = Token( Color( 1 ), Coordinate( 0, 0 ) )
       val t2 = Token( Color( 1 ), Coordinate( 2, 2 ) )
@@ -137,7 +153,7 @@ class GridSpecs extends FunSpec with ShouldMatchers
       assert( l1.isEnd( l2 ) )
     }
 
-    it("should link a link to a link in a grid")
+    it("should be an end link if a linkable links to an other linkable in a grid")
     {
       val red = Color(1)
       val t1p = Coordinate( 0, 0 )
@@ -145,7 +161,7 @@ class GridSpecs extends FunSpec with ShouldMatchers
       val t2p = Coordinate( 1, 0 )
       val t2= Token( red, t2p )
 
-      val fg = FastGrid( Grid( List( t1, t2 ), Nil, 3 ), t1p )
+      val fg = FastGrid( Grid( Set( t1, t2 ), Set(), 3 ), t1p )
 
       fg >> Down >> Right >> Right <*> t2p >> Down should be {
         fg <*> t2p >> Down >> Left >> Up
@@ -167,13 +183,13 @@ class GridSpecs extends FunSpec with ShouldMatchers
 
 
     val grid = FastGrid( Grid(
-      List(
+      Set(
         Token( red, redCoord1 ),
         Token( red, Coordinate( 0, 2 ) ),
         Token( blue, blueCoord1 ),
         Token( blue, Coordinate( 2, 1 ) )
       ),
-      Nil,
+      Set(),
       2
     ), redCoord1)
 
@@ -198,13 +214,13 @@ class GridSpecs extends FunSpec with ShouldMatchers
     val bluePos1 = Coordinate(0,1)
     val grid = FastGrid(
       Grid(
-        List(
+        Set(
           Token( red, redPos1 ),              // r1
           Token( red, bluePos1 ),             // b1
           Token( red, Coordinate( 1, 0 ) ),   // r2
           Token( red, Coordinate( 1, 1 ) )    // b2
         ),
-        links = Nil,
+        links = Set(),
         2
       ),
       redPos1
@@ -227,11 +243,11 @@ class GridSpecs extends FunSpec with ShouldMatchers
     val redPos1 = Coordinate(0,0)
     val grid = FastGrid(
       Grid(
-        List(
+        Set(
           Token( red, redPos1 ),
           Token( red, Coordinate( 1, 0 ) )
         ),
-        Nil,
+        Set(),
         2
       ),
       redPos1
@@ -258,13 +274,13 @@ class GridSpecs extends FunSpec with ShouldMatchers
     val bluePos1 = Coordinate(0,1)
     val grid = FastGrid(
       Grid(
-        List(
+        Set(
           Token( red, redPos1 ),              // r1
           Token( red, bluePos1 ),             // b1
           Token( red, Coordinate( 1, 0 ) ),   // r2
           Token( red, Coordinate( 1, 1 ) )    // b2
         ),
-        links = Nil,
+        links = Set(),
         2
       ),
       redPos1
@@ -283,35 +299,63 @@ class GridSpecs extends FunSpec with ShouldMatchers
   {
     it("should ignore linking and return unmodified grid")
     {
-      //  b b
-      //  r r
+      //  t1 t3
+      //  t2 t4
 
       val red = Color(1)
-      val rm1c = Coordinate( 0, 0 )
-      val rm2c = Coordinate( 1, 0 )
-
-      val blue = Color(2)
-      val bm2c = Coordinate( 1, 1 )
-      val bm1c = Coordinate( 0, 1 )
+      val t1c = Coordinate( 0, 0 )
+      val t2c = Coordinate( 0, 1 )
+      val t3c = Coordinate( 1, 0 )
+      val t4c = Coordinate( 1, 1 )
 
       val grid = Grid(
-        List(
-          Token( red, rm1c ),
-          Token( red, rm2c ),
-          Token( blue, bm1c ),
-          Token( blue, bm2c  )
+        Set(
+          Token( red, t1c ),
+          Token( red, t2c ),
+          Token( red, t3c ),
+          Token( red, t4c  )
         ),
-        Nil,
+        Set(),
         2
       )
 
-      val gridRed = FastGrid( grid, rm1c )
-      gridRed >> Down should be ( gridRed )   // Overflow down
-      gridRed >> Left should be ( gridRed )   // Overflow left
+      val grid1 = FastGrid( grid, t1c )
+      grid1 >> Up should be ( grid1 )
+      grid1 >> Left should be ( grid1 )
 
-      val gridBlue = FastGrid( grid, bm2c )
-      gridBlue >> Up should be( gridBlue )    // Overflow up
-      gridBlue >> Right should be( gridBlue ) // Overflow right
+      val grid2 = FastGrid( grid, t4c )
+      grid2 >> Down should be( grid2 )
+      grid2 >> Right should be( grid2 )
+
+      val grid3 = FastGrid( grid, t3c )
+      grid3 >> Up should be( grid3 )
+      grid3 >> Right should be( grid3 )
+    }
+
+    it("breaks on a marker with invalid coord")
+    {
+      //    ov
+      //    ov
+      //  1 x
+      //  2 3
+
+      val red = Color(1)
+      val tc = Coordinate( 1, 0 )
+      val grid = FastGrid( Grid(
+        Set( Token( red, tc ) ),
+        Set(),
+        2
+      ), tc )
+
+      grid    >>
+        Up    >>     // Overflow
+        Up    >>     // Overflow
+        Left  >>
+        Down  >>
+        Right should be (
+
+        grid >> Left >> Down >> Right
+      )
     }
   }
 }
