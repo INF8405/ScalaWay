@@ -30,6 +30,54 @@ class GridSpecs extends FunSpec with ShouldMatchers
         )
       }
     }
+
+    it("shall not pass over tokens")
+    {
+      //  _   b
+      //  r1  r2
+
+
+      val r1c = Coordinate( 0, 1 )
+      val bc = Coordinate( 1, 0 )
+
+      val red = Color(1)
+      val blue = Color(2)
+
+      val grid = FastGrid( Grid(
+        Set(
+          Token( red, r1c ),
+          Token( red, Coordinate( 1, 1 ) ),
+          Token( blue, bc )
+        ),
+        Set(), 2
+      ), r1c )
+
+      ( grid >> Right <*> bc >> Down ) should be
+      {
+        grid >> Right
+      }
+    }
+  }
+
+  describe("a token")
+  {
+    it("should not have two links")
+    {
+      val red = Color(1)
+      val tokenPos = Coordinate(0,0)
+      val grid =
+        Grid(
+          Set(
+            Token( red, tokenPos )
+          ),
+          links = Set(),
+          2
+        )
+
+      grid link( tokenPos, Right ) link( tokenPos, Down ) should be(
+        grid.link( tokenPos, Down )
+      )
+    }
   }
 
   describe("a self breaking link")
@@ -42,7 +90,7 @@ class GridSpecs extends FunSpec with ShouldMatchers
       Set(), 3
     ), tokenCoordinate )
 
-    it("breaks on a marker")
+    it("breaks on a token")
     {
       //  2 1       _ _
       //  3 x   >>  _ x
@@ -171,6 +219,19 @@ class GridSpecs extends FunSpec with ShouldMatchers
       fg >> Down >> Right >> Right <*> t2p >> Down should be {
         fg <*> t2p >> Down >> Left >> Up
       }
+    }
+  }
+
+  describe("an origin of a link")
+  {
+    it("should be the token at the root of a link")
+    {
+      val token = Token( Color(1), Coordinate(1,1) )
+      val falseToken = Token( Color(1), Coordinate(2,2) )
+      val link = Link( Link( Link( token, Up ), Left ), Down )
+
+      assert( link.isOrigin( token ) )
+      assert( !link.isOrigin( falseToken ) )
     }
   }
 

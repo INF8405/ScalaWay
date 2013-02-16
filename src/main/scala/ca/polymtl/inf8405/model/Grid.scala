@@ -59,7 +59,7 @@ class UnsafeSet( set: Set[Link] )
     other match
     {
       case link: Link => set - link
-      case _ => set
+      case token: Token => set.filter( !_.isOrigin( token ) )
     }
   }
 
@@ -101,22 +101,23 @@ case class Grid( tokens: Set[Token], links: Set[Link], size: Int )
         // * A token is alone
         // * There is nothing
 
-        val intersectionsLinks =
-        for {
-          link <- links
-          subLink <- link.subLinkables if subLink.position == position
-        } yield ( link, subLink )
-
-        if ( intersectionsLinks.isEmpty )
-        {
+        val intersectionToken =
           tokens.
             filter( _.position == position ).
-            map( t => ( t, t ) ).
-            headOption
+            map( t => ( t, t ) )
+
+        if ( intersectionToken.isEmpty )
+        {
+          val intersectionLinks =
+            for {
+              link <- links
+              subLink <- link.subLinkables if subLink.position == position
+            } yield ( link, subLink )
+          intersectionLinks.headOption
         }
         else
         {
-          intersectionsLinks.headOption
+          intersectionToken.headOption
         }
       }
 
@@ -133,7 +134,8 @@ case class Grid( tokens: Set[Token], links: Set[Link], size: Int )
           }
           else
           {
-            if( fromLink == toLink )
+            if( fromLink == toLink ||         // self breaking link on a link
+              fromLink.isOrigin( toLink ) )   // self breaking link on a token
             {
               this.copy( links = links - fromLink + toIntersect )
             }
@@ -194,6 +196,7 @@ trait Linkable
   def subLinks: List[Link]
   def isEnd( linkable: Linkable ): Boolean
   def isEnd( token: Token ): Boolean
+  def isOrigin( linkable: Linkable ): Boolean
 
   def +( other: Linkable ): Link
 }
@@ -205,6 +208,7 @@ case class Token( col: Color, coordinate: Coordinate ) extends Linkable
   def subLinks = Nil
   def isEnd( linkable: Linkable ) = linkable.isEnd( this )
   def isEnd( token: Token ) = false
+  def isOrigin( linkable: Linkable ) = this == linkable
 
   def +( other: Linkable ) = other + this
 
@@ -221,6 +225,8 @@ case class Link( from: Linkable, direction: Direction ) extends Linkable
     case from: Link  => from.isEnd(token)
     case from: Token => from != token && token.color == from.color
   }
+  def isOrigin( linkable: Linkable ) = from.isOrigin( linkable )
+
   override def toString = from.toString + " " + direction.toString
 
   def +( other: Linkable ) =
