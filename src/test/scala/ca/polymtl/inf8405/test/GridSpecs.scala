@@ -144,6 +144,11 @@ class GridSpecs extends FunSpec with ShouldMatchers
 
     it("should be an end link if a linkable links to an other linkable")
     {
+      //  t1
+      //   3
+      //   4,2  1 t2
+
+
       val t1 = Token( Color( 1 ), Coordinate( 0, 0 ) )
       val t2 = Token( Color( 1 ), Coordinate( 2, 2 ) )
 
@@ -275,10 +280,10 @@ class GridSpecs extends FunSpec with ShouldMatchers
     val grid = FastGrid(
       Grid(
         Set(
-          Token( red, redPos1 ),              // r1
-          Token( red, bluePos1 ),             // b1
-          Token( red, Coordinate( 1, 0 ) ),   // r2
-          Token( red, Coordinate( 1, 1 ) )    // b2
+          Token( red, redPos1 ),                // r1
+          Token( blue, bluePos1 ),              // b1
+          Token( red, Coordinate( 1, 0 ) ),     // r2
+          Token( blue, Coordinate( 1, 1 ) )     // b2
         ),
         links = Set(),
         2
@@ -286,12 +291,12 @@ class GridSpecs extends FunSpec with ShouldMatchers
       redPos1
     )
 
-    val solvedGrid = ( grid >> Right <*> bluePos1 ).grid
+    val notSolvedGrid = ( grid >> Right ).grid
 
     it("should be like that")
     {
-      assert( !solvedGrid.isAllLinked )
-      assert( solvedGrid.isFull )
+      assert( !notSolvedGrid.isAllLinked )
+      assert( notSolvedGrid.isFull )
     }
   }
 
@@ -330,6 +335,10 @@ class GridSpecs extends FunSpec with ShouldMatchers
       val grid3 = FastGrid( grid, t3c )
       grid3 >> Up should be( grid3 )
       grid3 >> Right should be( grid3 )
+
+      val grid4 = FastGrid( grid, t3c )
+      grid4 >> Up should be( grid4 )
+      grid4 >> Right should be( grid4 )
     }
 
     it("breaks on a marker with invalid coord")

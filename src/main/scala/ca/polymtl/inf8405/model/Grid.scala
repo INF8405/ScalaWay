@@ -124,11 +124,12 @@ case class Grid( tokens: Set[Token], links: Set[Link], size: Int )
       {
         case ( Some( ( fromLink, fromIntersect ) ), Some( ( toLink, toIntersect ) ) ) =>
         {
-          if ( fromIntersect.isEnd( toIntersect ) )
+          val newLink = Link( fromIntersect, direction )
+          if ( toIntersect.isEnd( newLink ) )
           {
             // put two links together
-            val newLink = Link( fromIntersect, direction ) + toIntersect
-            this.copy( links = links - fromLink - toLink + newLink )
+            val newLink2 = newLink + toIntersect
+            this.copy( links = links - fromLink - toLink + newLink2 )
           }
           else
           {
@@ -203,7 +204,7 @@ case class Token( col: Color, coordinate: Coordinate ) extends Linkable
   def subLinkables = List(this)
   def subLinks = Nil
   def isEnd( linkable: Linkable ) = linkable.isEnd( this )
-  def isEnd( token: Token ) = this != token && token.color == col
+  def isEnd( token: Token ) = false
 
   def +( other: Linkable ) = other + this
 
@@ -216,7 +217,10 @@ case class Link( from: Linkable, direction: Direction ) extends Linkable
   def subLinkables = this :: from.subLinkables
   def subLinks = this :: from.subLinks
   def isEnd( linkable: Linkable ) = from.isEnd( linkable )
-  def isEnd( token: Token ) = from.isEnd( token )
+  def isEnd( token: Token ) = from match {
+    case from: Link  => from.isEnd(token)
+    case from: Token => from != token && token.color == from.color
+  }
   override def toString = from.toString + " " + direction.toString
 
   def +( other: Linkable ) =
