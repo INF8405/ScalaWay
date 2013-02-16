@@ -37,7 +37,7 @@ class DrawView( context: Context, size: Int ) extends View( context )
   tokenPaint.setStrokeWidth( 1 )
 
   val linkPaint = new Paint
-  linkPaint.setStrokeWidth( 2 * TOKEN_RADIUS )
+  linkPaint.setStrokeWidth( TOKEN_RADIUS )
 
   val colorMap = Map(
     GridFactory.red -> AColor.RED,
@@ -96,7 +96,7 @@ class DrawView( context: Context, size: Int ) extends View( context )
               linkPaint.setColor( color )
               tokenPaint.setColor( color )
               canvas.drawLine( x1, y1, x2, y2, linkPaint )
-              canvas.drawCircle( x1, y1, TOKEN_RADIUS, tokenPaint )
+              canvas.drawCircle( x1, y1, TOKEN_RADIUS / 2, tokenPaint )
 
               draw( color, c2 :: tail )
             }
