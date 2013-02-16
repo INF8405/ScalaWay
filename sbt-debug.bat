@@ -1,0 +1,2 @@
+set SCRIPT_DIR=%~dp0
+java -XX:MaxPermSize=512m -Xmx712M -Xss2M -XX:+CMSClassUnloadingEnabled -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5005 -jar -jar "%SCRIPT_DIR%sbt-launch.jar" %*
