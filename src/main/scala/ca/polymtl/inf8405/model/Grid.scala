@@ -164,21 +164,23 @@ case class Grid( tokens: Set[Token], links: Set[Link], size: Int )
     }
   }
 
-  def coords = List.tabulate(size,size){ case (x,y) => Coordinate(x, y) }
-
-  def isFull: Boolean =
+  def isFull =
   {
     val allLinkables = links ++ tokens
     coords.flatten.forall( coordinate => allLinkables.exists( _.position == coordinate ) )
   }
-  def isAllLinked: Boolean =
+  def isAllLinked = tubesDone == tokens.groupBy( _.color ).size
+
+  def tubesDone =
   {
-    tokens.groupBy( _.color ).forall{ case ( color, tokens ) => {
+    tokens.groupBy( _.color ).count{ case ( color, tokens ) => {
       tokens.exists( t => links.exists( _.isEnd( t ) ) )
     }}
   }
 
-  def isInvalidLink( from: Coordinate, to: Direction ): Boolean =
+  private def coords = List.tabulate(size,size){ case (x,y) => Coordinate(x, y) }
+
+  private def isInvalidLink( from: Coordinate, to: Direction ): Boolean =
   {
     val toCoord = from + to
     val bounds = 0 until size

@@ -8,9 +8,10 @@ import android.content.Context
 import android.graphics.{Point, Paint, Canvas, Color => AColor}
 import model.Coordinate
 import controller.GameController
+import android.view.View.MeasureSpec
 
 
-class DrawView( context: Context, size: Int ) extends View( context )
+class DrawView( context: Context, size: Int, level: Int ) extends View( context )
 {
   setOnTouchListener( new GameController( this ) )
 
@@ -125,6 +126,16 @@ class DrawView( context: Context, size: Int ) extends View( context )
     drawEmptyGrid()
     drawTokens()
     drawLinks()
+  }
+
+  override def onMeasure( width: Int, height: Int )
+  {
+    val measuredWidth = MeasureSpec.getSize( width )
+    val measuredHeight = MeasureSpec.getSize( height )
+
+    val min = Math.min( measuredHeight, measuredWidth )
+
+    setMeasuredDimension( min, min )
   }
 
   def screenSize =

@@ -1,22 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="ca.polymtl.inf8405.view">
+          package="ca.polymtl.inf8405.view">
 
     <uses-sdk
-            android:minSdkVersion="15"
+            android:minSdkVersion="11"
             android:targetSdkVersion="15" />
 
     <application
-            android:icon="@drawable/android:star_big_on"
+            android:debuggable="true"
+            android:icon="@drawable/ic_launcher"
             android:label="@string/app_name"
-            android:debuggable="true">
-
+            android:theme="@style/CustomTheme" >
         <activity
                 android:name="ca.polymtl.inf8405.view.MainActivity"
                 android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -42,20 +41,12 @@
                     android:value="ca.polymtl.inf8405.view.MainActivity" />
         </activity>
         <activity
-                android:name="ca.polymtl.inf8405.view.Maps7x7Activity"
-                android:label="@string/title_activity_maps7x7" >
+                android:name="ca.polymtl.inf8405.view.SelectLevelActivity"
+                android:label="@string/title_activity_select_level" >
             <meta-data
                     android:name="android.support.PARENT_ACTIVITY"
                     android:value="ca.polymtl.inf8405.view.SelectSizeActivity" />
         </activity>
-        <activity
-                android:name="ca.polymtl.inf8405.view.TestActivity"
-                android:label="@string/title_activity_test" >
-            <meta-data
-                    android:name="android.support.PARENT_ACTIVITY"
-                    android:value="ca.polymtl.inf8405.view.MainActivity" />
-        </activity>
-
     </application>
 
 </manifest>

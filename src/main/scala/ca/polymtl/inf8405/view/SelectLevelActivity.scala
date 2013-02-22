@@ -5,7 +5,12 @@ import android.os.Bundle
 import android.view.{View, Menu}
 import android.content.Intent
 
-class Maps7x7Activity extends Activity with TypedActivity
+object SelectLevelActivity
+{
+  val NUMBER_OF_LEVEL = 3
+}
+
+class SelectLevelActivity extends Activity with TypedActivity
 {
   override def onCreateOptionsMenu( menu: Menu ) =
   {
@@ -17,7 +22,6 @@ class Maps7x7Activity extends Activity with TypedActivity
   {
     super.onCreate( savedInstanceState )
     setContentView( R.layout.activity_maps7x7 )
-    getActionBar.setDisplayHomeAsUpEnabled( true )
   }
 
   def selectSize7Lv1( view: View )

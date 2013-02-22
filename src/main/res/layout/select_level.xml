@@ -4,5 +4,6 @@
               android:layout_height="match_parent"
               android:orientation="vertical"
               android:layout_gravity="center_vertical"
-              tools:context=".GameScreenActivity">
+              tools:context=".SelectLevelActivity" >
+
 </LinearLayout>

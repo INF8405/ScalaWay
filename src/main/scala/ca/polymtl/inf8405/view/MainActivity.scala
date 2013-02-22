@@ -27,10 +27,4 @@ class MainActivity extends Activity with TypedActivity
     val intent = new Intent(this, classOf[SelectSizeActivity] )
     startActivity(intent)
   }
-
-//  def test(View view)
-//  {
-//    Intent intent = new Intent(this, TestActivity.class);
-//    startActivity(intent);
-//  }
 }

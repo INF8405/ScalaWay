@@ -4,7 +4,7 @@
                 android:layout_height="match_parent"
                 android:orientation="vertical"
                 android:layout_gravity="center"
-                android:background="@color/gray" >
+                android:background="@drawable/background" >
 
     <Button
             android:id="@+id/ButtonPlay"
@@ -12,6 +12,8 @@
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:text="@string/button_play"
+            android:layout_marginTop="@dimen/CustomMarginButton"
+            android:layout_marginBottom="@dimen/CustomMarginButton"
             android:onClick="playGame" />
 
     <Button
@@ -20,15 +22,8 @@
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:layout_below="@id/ButtonPlay"
-            android:text="@string/button_quit" />
-
-    <Button
-            android:id="@+id/ButtonTest"
-            android:layout_width="250dp"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_above="@id/ButtonPlay"
-            android:text="@string/button_test"
-            android:onClick="test"/>
+            android:text="@string/button_quit"
+            android:layout_marginTop="@dimen/CustomMarginButton"
+            android:layout_marginBottom="@dimen/CustomMarginButton"/>
 
 </RelativeLayout>

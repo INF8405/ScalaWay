@@ -9,6 +9,8 @@ import android.content.Intent
 
 object SelectSizeActivity
 {
+  val LEVEL_MESSAGE = "LevelMessage"
+  val SIZE_MESSAGE = "SizeMessage"
   val EXTRA_MESSAGE = "SelectedSize"
 }
 
@@ -24,12 +26,11 @@ class SelectSizeActivity extends Activity with TypedActivity
   {
     super.onCreate( savedInstanceState )
     setContentView( R.layout.select_size )
-    getActionBar.setDisplayHomeAsUpEnabled( true )
   }
 
   def selectSize7( view: View )
   {
-    val intent = new Intent( this, classOf[Maps7x7Activity] )
+    val intent = new Intent( this, classOf[SelectLevelActivity] )
     intent.putExtra( SelectSizeActivity.EXTRA_MESSAGE, 7 )
     startActivity( intent )
   }

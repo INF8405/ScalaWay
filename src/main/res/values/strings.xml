@@ -5,6 +5,7 @@
     <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
     <string name="edit_message">Enter a message</string>
+    <string name="label_completed_links"> Links completed: </string>
     <string name="button_send">Send</string>
     <string name="button_play">Play</string>
     <string name="button_quit">Quit</string>
@@ -12,18 +13,21 @@
     <string name="button_size7">Size 7x7</string>
     <string name="button_size8">Size 8x8</string>
     <string name="button_size7_level1"> Level 1 </string>
-    <string name="button_size7_level2"> Level 2 </string>
-    <string name="button_size7_level3"> Level 3 </string>
+    <string name="button_restart"> Restart </string>
+    <string name="button_ok"> OK </string>
+    <string name="title_custom_window">Custom Title Bar</string>
     <string name="title_activity_displaymessage">DisplayMessage</string>
     <string name="title_activity_game_screen">GameScreenActivity</string>
     <string name="title_activity_select_size">Select Size</string>
-    <string name="title_activity_maps7x7">Maps7x7Activity</string>
+    <string name="title_activity_select_level">Select level</string>
+    <string name="title_activity_test">TestActivity</string>
+    <string name="level_completed_header">Level Complete!</string>
 
     <color name="gray">#808080</color>
     <color name="black">#696969</color>
     <color name="red">#B22222</color>
     <color name="aqua">#00FFFF</color>
 
-    <string name="title_activity_test">TestActivity</string>
+    <string name="marginButtonMenu">10dp</string>
 
 </resources>
