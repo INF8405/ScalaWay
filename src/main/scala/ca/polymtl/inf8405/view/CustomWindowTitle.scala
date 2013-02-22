@@ -29,6 +29,7 @@ class CustomWindowTitle extends Activity with TypedActivity
     //icon = Some( findView( TR.ic_launcher ) )
   }
 
+  // TODO: Refactor trait
   def getDimention =
   {
     val wm = getSystemService( Context.WINDOW_SERVICE ).asInstanceOf[WindowManager]

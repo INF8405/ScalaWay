@@ -1,14 +1,12 @@
 package ca.polymtl.inf8405
 package controller
 
-
 import android.view.View.OnTouchListener
 import android.view.{MotionEvent, View}
 import model.Coordinate
 import view.DrawView
 
-
-class GameController( drawView: DrawView ) extends OnTouchListener
+class GameController( drawView: DrawView, observer: GridObserver ) extends OnTouchListener
 {
   var lastCoord: Option[Coordinate] = None
 
@@ -32,11 +30,9 @@ class GameController( drawView: DrawView ) extends OnTouchListener
         else
         {
           val currentCoordinate = fromEvent( event )
-
-          for {
-            last <- lastCoord if last != currentCoordinate }
+          for { last <- lastCoord if last != currentCoordinate }
           {
-            drawView.model = drawView.model.link( last, currentCoordinate )
+            observer.link( last, currentCoordinate )
             lastCoord = Some( currentCoordinate )
           }
         }
@@ -54,10 +50,9 @@ class GameController( drawView: DrawView ) extends OnTouchListener
 
   def fromEvent( event: MotionEvent ) = pixelToModel( event.getX, event.getY )
 
-
   def pixelToModel( x: Float, y: Float) =
   {
-    val modelSize: Float = drawView.model.size
+    val modelSize: Float = observer.grid.size
     val screenSize: Float = drawView.GRID_SIZE
 
     val cx = Math.floor( modelSize * x / screenSize ).asInstanceOf[Int]

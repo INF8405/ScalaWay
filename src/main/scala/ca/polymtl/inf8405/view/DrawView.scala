@@ -2,6 +2,7 @@ package ca.polymtl.inf8405
 package view
 
 import model._
+import controller._
 
 import android.view.{WindowManager, View}
 import android.content.Context
@@ -10,25 +11,37 @@ import model.Coordinate
 import controller.GameController
 import android.view.View.MeasureSpec
 
-
 class DrawView( context: Context, size: Int, level: Int ) extends View( context )
 {
-  setOnTouchListener( new GameController( this ) )
+  private var linkAmount = 0
 
-  val ( width, height ) = screenSize
+  private val ( width, height ) = screenSize
   val GRID_SIZE = Math.min( width, height )
-  val CELL_SIZE = GRID_SIZE / size
-  val TOKEN_RADIUS = 3 * CELL_SIZE / 8
+  private val CELL_SIZE = GRID_SIZE / size
+  private val TOKEN_RADIUS = 3 * CELL_SIZE / 8
+  private val LINK_OFFSET = 100
 
-  var model =
+  val observer =
   {
-    val ff =
-    FastGrid( GridFactory.SevenBySeven.level1, Coordinate( 0, 1 ) ) >>
-      Right >> Right >> Right >> Down >> Down >> Down
-
-    ff.grid
+    GridObserver( GridFactory.SevenBySeven.level1, new GridListener {
+      def apply( event: GridEvent )
+      {
+        event match
+        {
+          case Complete =>
+          {
+            // bravo
+          }
+          case LinkChanged( amount ) =>
+          {
+            linkAmount = amount
+          }
+        }
+      }
+    })
   }
 
+  setOnTouchListener( new GameController( this, observer ) )
 
   val gridPaint = new Paint
   gridPaint.setColor( AColor.BLACK )
@@ -55,8 +68,8 @@ class DrawView( context: Context, size: Int, level: Int ) extends View( context 
     def drawEmptyGrid()
     {
       for {
-        x <- 1 to model.size
-        y <- 1 to model.size }
+        x <- 1 to observer.grid.size
+        y <- 1 to observer.grid.size }
       {
         canvas.drawLine( CELL_SIZE * x, 0, CELL_SIZE * x, GRID_SIZE, gridPaint )
         canvas.drawLine( 0, CELL_SIZE * y, GRID_SIZE, CELL_SIZE * y, gridPaint )
@@ -65,7 +78,7 @@ class DrawView( context: Context, size: Int, level: Int ) extends View( context 
 
     def drawLinks()
     {
-      for { link <- model.links }
+      for { link <- observer.grid.links }
       {
         def accPosition( aLink: Linkable ) : ( Color, List[Coordinate] ) =
         {
@@ -112,7 +125,7 @@ class DrawView( context: Context, size: Int, level: Int ) extends View( context 
     def drawTokens()
     {
       for {
-        token <- model.tokens
+        token <- observer.grid.tokens
         color <- colorMap.get( token.color ) }
       {
         tokenPaint.setColor( color )
@@ -123,6 +136,16 @@ class DrawView( context: Context, size: Int, level: Int ) extends View( context 
       }
     }
 
+    def drawLinkAmount( )
+    {
+      val paint = new Paint()
+      paint.setColor( AColor.GREEN )
+      paint.setTextSize( CELL_SIZE )
+
+      canvas.drawText( s"links: $linkAmount", 0, LINK_OFFSET, paint )
+    }
+
+    drawLinkAmount()
     drawEmptyGrid()
     drawTokens()
     drawLinks()
@@ -138,6 +161,7 @@ class DrawView( context: Context, size: Int, level: Int ) extends View( context 
     setMeasuredDimension( min, min )
   }
 
+  // TODO refactor trait
   def screenSize =
   {
     val wm = context.getSystemService(Context.WINDOW_SERVICE).asInstanceOf[WindowManager]
