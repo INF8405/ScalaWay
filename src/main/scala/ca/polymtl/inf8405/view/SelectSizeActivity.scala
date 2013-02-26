@@ -1,44 +1,56 @@
 package ca.polymtl.inf8405
 package view
 
-import android.app.Activity
-import android.os.Bundle
-import android.view.{View, Menu}
-import android.content.Intent
+import controller.GridFactory
 
+import android.app.Activity
+import android.content.Intent
+import android.os.Bundle
+import android.view.{Gravity, View, Menu}
+import android.view.ViewGroup.LayoutParams
+import android.view.View.OnClickListener
+import android.widget.{RelativeLayout, LinearLayout, Button, TextView}
 
 object SelectSizeActivity
 {
-  val LEVEL_MESSAGE = "LevelMessage"
   val SIZE_MESSAGE = "SizeMessage"
-  val EXTRA_MESSAGE = "SelectedSize"
 }
 
-class SelectSizeActivity extends Activity with TypedActivity
-{
-  override def onCreateOptionsMenu( menu: Menu ) =
-  {
-    getMenuInflater.inflate( R.menu.select_size, menu )
-    true
-  }
+class SelectSizeActivity extends Activity
+  with TypedActivity
+  with ActivityScreenSize
+  with ButtonLayout
+{ self =>
 
   protected override def onCreate( savedInstanceState: Bundle )
   {
     super.onCreate( savedInstanceState )
-    setContentView( R.layout.select_size )
-  }
 
-  def selectSize7( view: View )
-  {
-    val intent = new Intent( this, classOf[SelectLevelActivity] )
-    intent.putExtra( SelectSizeActivity.EXTRA_MESSAGE, 7 )
-    startActivity( intent )
-  }
+    val  mainLayout = new LinearLayout( this )
+    mainLayout.setOrientation( LinearLayout.VERTICAL )
+    mainLayout.setGravity( Gravity.CENTER_VERTICAL )
 
-  def selectSize8( view: View )
-  {
-    val intent = new Intent( this, classOf[GameScreenActivity] )
-    intent.putExtra( SelectSizeActivity.EXTRA_MESSAGE, 8 )
-    startActivity( intent )
+    val label = new TextView( this )
+    label.setText( "Size" )
+    mainLayout.addView( label )
+
+    GridFactory.grids.groupBy( _.grid.size ).toSeq.sortBy(_._1).map{ case ( size, _ ) => {
+      val button = new Button( this )
+      button.setText( s"$size x $size" )
+      button.setLayoutParams( buttonLayout )
+      button.setOnClickListener( new OnClickListener()
+      {
+        override def onClick( v: View )
+        {
+          val intent = new Intent( self, classOf[SelectLevelActivity] )
+          intent.putExtra( SelectSizeActivity.SIZE_MESSAGE, size )
+          startActivity(intent)
+        }
+      })
+
+      button
+    }}.foreach( mainLayout.addView _ )
+
+    setContentView( mainLayout )
   }
 }

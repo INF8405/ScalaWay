@@ -1,14 +1,12 @@
 package ca.polymtl.inf8405.view
 
 import android.app.Activity
-import android.content.Context
-import android.graphics.Point
 import android.os.Bundle
-import android.view.{WindowManager, Window}
+import android.view.Window
 import android.widget.TextView
 import android.widget.ImageView
 
-class CustomWindowTitle extends Activity with TypedActivity
+class CustomWindowTitle extends Activity with TypedActivity with ActivityScreenSize
 {
   protected var title: Option[TextView] = None
   protected var icon: Option[ImageView] = None
@@ -27,16 +25,5 @@ class CustomWindowTitle extends Activity with TypedActivity
     title_.setText( "Custom title" )
 
     //icon = Some( findView( TR.ic_launcher ) )
-  }
-
-  // TODO: Refactor trait
-  def getDimention =
-  {
-    val wm = getSystemService( Context.WINDOW_SERVICE ).asInstanceOf[WindowManager]
-    val display = wm.getDefaultDisplay
-    var screenSize = new Point()
-    display.getSize(screenSize)
-
-    ( screenSize.x, screenSize.y )
   }
 }

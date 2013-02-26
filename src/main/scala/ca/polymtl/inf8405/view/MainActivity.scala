@@ -16,11 +16,6 @@ class MainActivity extends Activity with TypedActivity
     setContentView( R.layout.activity_main )
   }
 
-  override def onCreateOptionsMenu( menu: Menu ) =
-  {
-    getMenuInflater.inflate(R.menu.activity_main, menu)
-    true
-  }
 
   def playGame( view: View )
   {

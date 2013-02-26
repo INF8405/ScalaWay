@@ -1,4 +1,5 @@
-package ca.polymtl.inf8405.view
+package ca.polymtl.inf8405
+package view
 
 import android.os.Bundle
 import android.content.Context
@@ -13,9 +14,16 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.PopupWindow
 
-class GameScreenActivity extends CustomWindowTitle
+import controller.GridFactory
+
+object GameScreenActivity
 {
   val BACKGROUND_COLOR = Color.BLACK
+}
+
+class GameScreenActivity extends CustomWindowTitle with ActivityScreenSize
+{
+  import GameScreenActivity.BACKGROUND_COLOR
 
   private var popup: Option[PopupWindow] = None
   private var sizeMap: Option[Int] = None
@@ -34,7 +42,7 @@ class GameScreenActivity extends CustomWindowTitle
     // Get the size message from the intent
     val intent = getIntent()
     val sizeMap_ = intent.getIntExtra( SelectSizeActivity.SIZE_MESSAGE, 7 )
-    val level_ = intent.getIntExtra( SelectSizeActivity.LEVEL_MESSAGE, 1 )
+    val level_ = intent.getIntExtra( SelectLevelActivity.LEVEL_MESSAGE, 1 )
     sizeMap = Some( sizeMap_ )
     level = Some( level_ )
 
@@ -48,14 +56,15 @@ class GameScreenActivity extends CustomWindowTitle
     mainLayout.setOrientation( LinearLayout.VERTICAL )
     mainLayout.setGravity( Gravity.CENTER_VERTICAL )
 
-    val drawView_ = new DrawView( this, sizeMap_, level_ )
+    val drawView_ = new DrawView( this, screenSize, sizeMap_, level_ )
     drawView_.setFocusable( true )
     drawView_.setFocusableInTouchMode( true )
 
     // Test - Create popupwindow
     val popup_ = new PopupWindow( this )
     popup = Some( popup_ )
-    val ( width, height ) = getDimention
+    val dim = screenSize
+    val ( width, height ) = ( dim.height, dim.width )
 
     val popupWidth = 3 * width / 4
     val popupHeigth = height / 4
@@ -63,7 +72,7 @@ class GameScreenActivity extends CustomWindowTitle
     val replayGame = new NewGameListener( this , level_ )
     val dimension = Dimension( popupWidth, popupHeigth )
 
-    if ( level_ < SelectLevelActivity.NUMBER_OF_LEVEL )
+    if ( level_ < GridFactory.numberOfLevels( sizeMap_ ) )
     {
       val nextGame = new NewGameListener(this, level_ + 1)
       val transparentLayout = new TransparentPanelLayout(
@@ -122,7 +131,7 @@ class GameScreenActivity extends CustomWindowTitle
     {
       val intent = new Intent(contextParent, classOf[GameScreenActivity])
       intent.putExtra(SelectSizeActivity.SIZE_MESSAGE, sizeMap)
-      intent.putExtra(SelectSizeActivity.LEVEL_MESSAGE, nextLevel)
+      intent.putExtra(SelectLevelActivity.LEVEL_MESSAGE, nextLevel)
       startActivity(intent)
       finishGameScreen()
 

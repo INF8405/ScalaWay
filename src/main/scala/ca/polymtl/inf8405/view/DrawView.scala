@@ -11,11 +11,11 @@ import model.Coordinate
 import controller.GameController
 import android.view.View.MeasureSpec
 
-class DrawView( context: Context, size: Int, level: Int ) extends View( context )
+class DrawView( context: Context, dimension: Dimension, size: Int, level: Int ) extends View( context )
 {
   private var linkAmount = 0
 
-  private val ( width, height ) = screenSize
+  private val ( width, height ) = ( dimension.width, dimension.height )
   val GRID_SIZE = Math.min( width, height )
   private val CELL_SIZE = GRID_SIZE / size
   private val TOKEN_RADIUS = 3 * CELL_SIZE / 8
@@ -23,7 +23,7 @@ class DrawView( context: Context, size: Int, level: Int ) extends View( context 
 
   val observer =
   {
-    GridObserver( GridFactory.SevenBySeven.level1, new GridListener {
+    GridObserver( GridFactory.grids(0).grid, new GridListener {
       def apply( event: GridEvent )
       {
         event match
@@ -159,15 +159,5 @@ class DrawView( context: Context, size: Int, level: Int ) extends View( context 
     val min = Math.min( measuredHeight, measuredWidth )
 
     setMeasuredDimension( min, min )
-  }
-
-  // TODO refactor trait
-  def screenSize =
-  {
-    val wm = context.getSystemService(Context.WINDOW_SERVICE).asInstanceOf[WindowManager]
-    val display = wm.getDefaultDisplay
-    var screenSize = new Point
-    display.getSize(screenSize)
-    ( screenSize.x, screenSize.y )
   }
 }

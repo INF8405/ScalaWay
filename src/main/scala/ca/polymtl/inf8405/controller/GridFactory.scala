@@ -23,9 +23,9 @@ object GridFactory
     for{ l <- gridBySize.get(size)
 
     } yield l.find( _.level == level)
-
-
   }
+
+  def numberOfLevels( size: Int ) = grids.count( _.grid.size == size )
 
   val grids = List(
     Level( 1, Grid( Set(
