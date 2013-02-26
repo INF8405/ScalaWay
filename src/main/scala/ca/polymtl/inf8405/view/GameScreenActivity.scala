@@ -22,18 +22,12 @@ object GameScreenActivity
 }
 
 class GameScreenActivity extends CustomWindowTitle with ActivityScreenSize
-{
+{ self =>
   import GameScreenActivity.BACKGROUND_COLOR
 
   private var popup: Option[PopupWindow] = None
   private var sizeMap: Option[Int] = None
   private var level: Option[Int] = None
-
-  override def onCreateOptionsMenu( menu: Menu ) =
-  {
-    getMenuInflater.inflate( R.menu.gamescreen, menu )
-    true
-  }
 
   protected override def onCreate( savedInstanceState: Bundle )
   {
@@ -130,10 +124,11 @@ class GameScreenActivity extends CustomWindowTitle with ActivityScreenSize
     override def onClick( v: View )
     {
       val intent = new Intent(contextParent, classOf[GameScreenActivity])
-      intent.putExtra(SelectSizeActivity.SIZE_MESSAGE, sizeMap)
+      sizeMap.foreach( intent.putExtra( SelectSizeActivity.SIZE_MESSAGE, _ ) )
       intent.putExtra(SelectLevelActivity.LEVEL_MESSAGE, nextLevel)
       startActivity(intent)
-      finishGameScreen()
+
+      self.finish()
 
       popup.foreach( _.dismiss() )
     }
@@ -145,10 +140,5 @@ class GameScreenActivity extends CustomWindowTitle with ActivityScreenSize
     {
       popup.foreach( _.dismiss() )
     }
-  }
-
-  def finishGameScreen()
-  {
-    this.finish()
   }
 }

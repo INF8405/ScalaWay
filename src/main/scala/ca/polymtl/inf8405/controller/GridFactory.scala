@@ -17,15 +17,14 @@ object GridFactory
   val redWine = Color(10)
 
   def getGrid(size: Int, level: Int) =
-  {
-    val gridBySize = grids.groupBy( _.grid.size )
+    grids.
+      find( l => level == l.level && size == l.grid.size ).
+      map( _.grid )
 
-    for{ l <- gridBySize.get(size)
 
-    } yield l.find( _.level == level)
-  }
 
-  def numberOfLevels( size: Int ) = grids.count( _.grid.size == size )
+  def numberOfLevels( size: Int ) =
+    grids.count( _.grid.size == size )
 
   val grids = List(
     Level( 1, Grid( Set(

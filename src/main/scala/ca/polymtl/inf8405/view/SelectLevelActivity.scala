@@ -22,12 +22,6 @@ class SelectLevelActivity
   with ButtonLayout
 { self =>
 
-  override def onCreateOptionsMenu( menu: Menu ) =
-  {
-    getMenuInflater.inflate( R.menu.select_level, menu )
-    true
-  }
-
   protected override def onCreate( savedInstanceState: Bundle )
   {
     super.onCreate( savedInstanceState )

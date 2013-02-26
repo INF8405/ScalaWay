@@ -23,7 +23,7 @@ class DrawView( context: Context, dimension: Dimension, size: Int, level: Int ) 
 
   val observer =
   {
-    GridObserver( GridFactory.grids(0).grid, new GridListener {
+    GridFactory.getGrid( size, level ).map( GridObserver( _, new GridListener {
       def apply( event: GridEvent )
       {
         event match
@@ -38,10 +38,13 @@ class DrawView( context: Context, dimension: Dimension, size: Int, level: Int ) 
           }
         }
       }
-    })
+    }))
   }
 
-  setOnTouchListener( new GameController( this, observer ) )
+  for { obs <- observer }
+  {
+    setOnTouchListener( new GameController( this, obs ) )
+  }
 
   val gridPaint = new Paint
   gridPaint.setColor( AColor.BLACK )
@@ -68,8 +71,9 @@ class DrawView( context: Context, dimension: Dimension, size: Int, level: Int ) 
     def drawEmptyGrid()
     {
       for {
-        x <- 1 to observer.grid.size
-        y <- 1 to observer.grid.size }
+        obs <- observer
+        x <- 1 to obs.grid.size
+        y <- 1 to obs.grid.size }
       {
         canvas.drawLine( CELL_SIZE * x, 0, CELL_SIZE * x, GRID_SIZE, gridPaint )
         canvas.drawLine( 0, CELL_SIZE * y, GRID_SIZE, CELL_SIZE * y, gridPaint )
@@ -78,7 +82,9 @@ class DrawView( context: Context, dimension: Dimension, size: Int, level: Int ) 
 
     def drawLinks()
     {
-      for { link <- observer.grid.links }
+      for {
+        obs <- observer
+        link <- obs.grid.links }
       {
         def accPosition( aLink: Linkable ) : ( Color, List[Coordinate] ) =
         {
@@ -125,7 +131,8 @@ class DrawView( context: Context, dimension: Dimension, size: Int, level: Int ) 
     def drawTokens()
     {
       for {
-        token <- observer.grid.tokens
+        obs <- observer
+        token <- obs.grid.tokens
         color <- colorMap.get( token.color ) }
       {
         tokenPaint.setColor( color )
