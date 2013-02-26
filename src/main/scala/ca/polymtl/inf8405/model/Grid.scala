@@ -86,19 +86,19 @@ case class Grid( tokens: Set[Token], links: Set[Link], size: Int )
       {
         case ( Some( ( fromLink, fromIntersect ) ), Some( ( toLink, toIntersect ) ) ) =>
         {
-          val newLink = Link( fromIntersect, direction )
-          if ( toIntersect.isEnd( newLink ) )
+          if( fromLink == toLink ||         // self breaking link on a link
+            fromLink.isOrigin( toLink ) )   // self breaking link on a token
           {
-            // put two links together
-            val newLink2 = newLink + toIntersect
-            this.copy( links = links - fromLink - toLink + newLink2 )
+            this.copy( links = links - fromLink + toIntersect )
           }
           else
           {
-            if( fromLink == toLink ||         // self breaking link on a link
-              fromLink.isOrigin( toLink ) )   // self breaking link on a token
+            val newLink = Link( fromIntersect, direction )
+            if ( toIntersect.isEnd( newLink ) )
             {
-              this.copy( links = links - fromLink + toIntersect )
+              // put two links together
+              val newLink2 = newLink + toIntersect
+              this.copy( links = links - fromLink - toLink + newLink2 )
             }
             else
             {
@@ -113,7 +113,6 @@ case class Grid( tokens: Set[Token], links: Set[Link], size: Int )
                 case _ => this
               }
             }
-
           }
         }
         case ( Some( ( fromLink, fromIntersect ) ), None ) =>
@@ -134,8 +133,8 @@ case class Grid( tokens: Set[Token], links: Set[Link], size: Int )
 
   def tubesDone =
   {
-    tokens.groupBy( _.color ).count{ case ( color, tokens ) => {
-      tokens.exists( t => links.exists( _.isEnd( t ) ) )
+    tokens.groupBy( _.color ).count{ case ( _, tokensPair ) => {
+      tokensPair.exists( t => links.exists( _.isEnd( t ) ) )
     }}
   }
 
@@ -159,7 +158,6 @@ trait Linkable
   def subLinkables: List[Linkable]
   def subLinks: List[Link]
   def isEnd( linkable: Linkable ): Boolean
-  def isEnd( token: Token ): Boolean
   def isOrigin( linkable: Linkable ): Boolean
 
   def +( other: Linkable ): Link
@@ -184,11 +182,14 @@ case class Link( from: Linkable, direction: Direction ) extends Linkable
   def color = from.color
   def subLinkables = this :: from.subLinkables
   def subLinks = this :: from.subLinks
-  def isEnd( linkable: Linkable ) = from.isEnd( linkable )
-  def isEnd( token: Token ) = from match {
-    case from: Link  => from.isEnd(token)
-    case from: Token => from != token && token.color == from.color
+
+  def isEnd( linkable: Linkable  ) =
+  {
+    !isOrigin( linkable ) &&
+    linkable.color == color &&
+    linkable.position == position
   }
+
   def isOrigin( linkable: Linkable ) = from.isOrigin( linkable )
 
   override def toString = from.toString + " " + direction.toString

@@ -220,6 +220,19 @@ class GridSpecs extends FunSpec with ShouldMatchers
         fg <*> t2p >> Down >> Left >> Up
       }
     }
+
+    it("should match the other end")
+    {
+      val red = Color(1)
+      val t1p = Coordinate( 0, 0 )
+      val t1 = Token( red, t1p )
+      val t2p = Coordinate( 0, 5 )
+      val t2 = Token( red, t2p )
+
+      val link = Link( t1, Right )
+
+      assert( !link.isEnd( t2 ) )
+    }
   }
 
   describe("an origin of a link")
@@ -237,8 +250,8 @@ class GridSpecs extends FunSpec with ShouldMatchers
 
   describe("a full-allLinked grid")
   {
-    //  b - b
     //  r - r
+    //  b - b
 
     val red = Color(1)
     val redCoord1 = Coordinate( 0, 0 )
@@ -251,20 +264,21 @@ class GridSpecs extends FunSpec with ShouldMatchers
     val grid = FastGrid( Grid(
       Set(
         Token( red, redCoord1 ),
-        Token( red, Coordinate( 0, 2 ) ),
+        Token( red, Coordinate( 2, 0 ) ),
         Token( blue, blueCoord1 ),
         Token( blue, Coordinate( 2, 1 ) )
       ),
       Set(),
-      2
+      3
     ), redCoord1)
 
     val solvedGrid = ( grid >> Right >> Right <*> blueCoord1 >> Right >> Right ).grid
 
     it("should be like that")
     {
+      assert( 2 === solvedGrid.tubesDone )
       assert( solvedGrid.isAllLinked )
-      assert( solvedGrid.isFull )
+      assert( !solvedGrid.isFull )
     }
   }
 
@@ -282,9 +296,9 @@ class GridSpecs extends FunSpec with ShouldMatchers
       Grid(
         Set(
           Token( red, redPos1 ),              // r1
-          Token( red, bluePos1 ),             // b1
+          Token( blue, bluePos1 ),            // b1
           Token( red, Coordinate( 1, 0 ) ),   // r2
-          Token( red, Coordinate( 1, 1 ) )    // b2
+          Token( blue, Coordinate( 1, 1 ) )   // b2
         ),
         links = Set(),
         2
@@ -296,6 +310,7 @@ class GridSpecs extends FunSpec with ShouldMatchers
 
     it("should be like that")
     {
+      assert( 2 === solvedGrid.tubesDone )
       assert( solvedGrid.isAllLinked )
       assert( solvedGrid.isFull )
     }
@@ -323,6 +338,7 @@ class GridSpecs extends FunSpec with ShouldMatchers
 
     it("should be like that")
     {
+      assert( 1 === solvedGrid.tubesDone )
       assert( solvedGrid.isAllLinked )
       assert( !solvedGrid.isFull )
     }
@@ -356,6 +372,7 @@ class GridSpecs extends FunSpec with ShouldMatchers
 
     it("should be like that")
     {
+      assert( 1 === notSolvedGrid.tubesDone )
       assert( !notSolvedGrid.isAllLinked )
       assert( notSolvedGrid.isFull )
     }
