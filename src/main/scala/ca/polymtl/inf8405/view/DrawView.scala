@@ -32,10 +32,9 @@ class DrawView( context: Context, dimension: Dimension, size: Int, level: Int, p
         {
           case Complete =>
           {
-            // bravo
+            // Congratz
             popup.showAtLocation( mainLayout, Gravity.CENTER, 0, 0 )
-            popup.update( 0, 0, 3*dimension.width/4, dimension.height/4 )
-            linkAmount = 0
+            popup.update( 0, 0, 3 * dimension.width / 4, dimension.height / 4 )
           }
           case LinkChanged( amount ) =>
           {
@@ -44,11 +43,6 @@ class DrawView( context: Context, dimension: Dimension, size: Int, level: Int, p
         }
       }
     }))
-  }
-
-  def showPopup =
-  {
-
   }
 
   for { obs <- observer }

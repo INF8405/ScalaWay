@@ -260,25 +260,29 @@ class GridSpecs extends FunSpec with ShouldMatchers
     val blue = Color(2)
     val blueCoord1 = Coordinate( 0, 1 )
 
+    val green = Color(3)
+    val greenCoord1 = Coordinate( 0, 2 )
 
     val grid = FastGrid( Grid(
       Set(
         Token( red, redCoord1 ),
         Token( red, Coordinate( 2, 0 ) ),
         Token( blue, blueCoord1 ),
-        Token( blue, Coordinate( 2, 1 ) )
+        Token( blue, Coordinate( 2, 1 ) ),
+        Token( green, greenCoord1 ),
+        Token( green, Coordinate( 2, 2 ) )
       ),
       Set(),
       3
     ), redCoord1)
 
-    val solvedGrid = ( grid >> Right >> Right <*> blueCoord1 >> Right >> Right ).grid
+    val solvedGrid = ( grid >> Right >> Right <*> blueCoord1 >> Right >> Right <*> greenCoord1 >> Right >> Right ).grid
 
     it("should be like that")
     {
-      assert( 2 === solvedGrid.tubesDone )
+      assert( 3 === solvedGrid.tubesDone )
       assert( solvedGrid.isAllLinked )
-      assert( !solvedGrid.isFull )
+      assert( solvedGrid.isFull === true)
     }
   }
 
@@ -311,8 +315,8 @@ class GridSpecs extends FunSpec with ShouldMatchers
     it("should be like that")
     {
       assert( 2 === solvedGrid.tubesDone )
-      assert( solvedGrid.isAllLinked )
-      assert( solvedGrid.isFull )
+      assert( solvedGrid.isAllLinked === true)
+      assert( solvedGrid.isFull === true)
     }
   }
 
@@ -373,8 +377,8 @@ class GridSpecs extends FunSpec with ShouldMatchers
     it("should be like that")
     {
       assert( 1 === notSolvedGrid.tubesDone )
-      assert( !notSolvedGrid.isAllLinked )
-      assert( notSolvedGrid.isFull )
+      assert( notSolvedGrid.isAllLinked === false )
+      assert( notSolvedGrid.isFull === true )
     }
   }
 
@@ -443,6 +447,58 @@ class GridSpecs extends FunSpec with ShouldMatchers
 
         grid >> Left >> Down >> Right
       )
+    }
+  }
+
+  describe("Coords")
+  {
+    it("should return all coordinates 2x2 grid")
+    {
+      val grid = Grid(Set.empty[Token], Set.empty[Link], 2)
+      val allCoords = grid.coords
+      assert ( allCoords.flatten.size === 4 )
+      assert ( allCoords.flatten.contains(Coordinate(0,0)))
+      assert ( allCoords.flatten.contains(Coordinate(0,1)))
+      assert ( allCoords.flatten.contains(Coordinate(1,0)))
+      assert ( allCoords.flatten.contains(Coordinate(1,1)))
+    }
+
+    it("should return all coordinates 3x3 grid")
+    {
+      val grid = Grid(Set.empty[Token], Set.empty[Link], 3)
+      val allCoords = grid.coords
+      val l = List(Coordinate(0,0), Coordinate(1,0), Coordinate(2,0),
+        Coordinate(0,1), Coordinate(1,1), Coordinate(2,1),
+        Coordinate(0,2), Coordinate(1,2), Coordinate(2,2))
+      assert ( allCoords.flatten.size === 9 )
+
+      val b = allCoords.flatten.forall( coord => l.contains(coord) )
+      assert( b === true)
+      //assert ( allCoords.flatten ===  l)
+    }
+  }
+
+  describe("Link between token(0,0) and token(2,0) in 3x3 grid")
+  {
+    //  r - r
+
+    val red = Color(1)
+    val redCoord1 = Coordinate( 0, 0 )
+
+    val grid = FastGrid( Grid(
+      Set(
+        Token( red, redCoord1 ),
+        Token( red, Coordinate( 2, 0 ) )
+      ),
+      Set(),
+      3
+    ), redCoord1)
+
+    val solvedGrid = ( grid >> Right >> Right ).grid
+
+    it("should have a coordinate 1 0")
+    {
+      assert( solvedGrid.links.head.from.position === Coordinate(1,0))
     }
   }
 }

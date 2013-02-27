@@ -36,6 +36,10 @@ class UnsafeSet( set: Set[Link] )
 
 case class Grid( tokens: Set[Token], links: Set[Link], size: Int )
 {
+  def colorOf(coord: Coordinate): Color = tokens.groupBy(_.coordinate).get(coord).get.head.col
+
+  def isTokenPosition(coord: Coordinate)= tokens.groupBy(_.coordinate).get(coord) != None
+
   def link( from: Coordinate, to: Coordinate ): Grid =
   {
     DirectionSet.values.find( from + _ == to ).
@@ -126,11 +130,14 @@ case class Grid( tokens: Set[Token], links: Set[Link], size: Int )
 
   def isFinished = isFull && isAllLinked
 
-  def isFull =
+  def isFull: Boolean =
   {
-    val allLinkables = links ++ tokens
-    coords.flatten.forall( coordinate => allLinkables.exists( _.position == coordinate ) )
+    val allLinkables = tokens ++ links.map( _.subLinkables).flatten
+    coords.flatten.forall(
+      coordinate => ( allLinkables.exists( _.position == coordinate ) )
+    )
   }
+
   def isAllLinked = tubesDone == tokens.groupBy( _.color ).size
 
   def tubesDone =
@@ -140,7 +147,7 @@ case class Grid( tokens: Set[Token], links: Set[Link], size: Int )
     }}
   }
 
-  private def coords = List.tabulate(size,size){ case (x,y) => Coordinate(x, y) }
+  def coords = List.tabulate(size,size){ case (x,y) => Coordinate(x, y) }
 
   private def isInvalidLink( from: Coordinate, to: Direction ): Boolean =
   {

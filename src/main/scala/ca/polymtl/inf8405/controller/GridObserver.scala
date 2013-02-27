@@ -17,7 +17,7 @@ case class GridState( full: Boolean, allLinked: Boolean, tubesDone: Int )
   def delta( previous: GridState ): List[GridEvent] =
   {
     val eventComplete =
-      if ( full & allLinked ) Some( Complete )
+      if ( allLinked  & full) Some( Complete )
       else None
 
     val eventLinks =
@@ -40,10 +40,12 @@ case class GridObserver( var grid: Grid, listener: GridListener, var state: Grid
 {
   def link( last: Coordinate, current: Coordinate )
   {
-    grid = grid.link( last, current )
-    val newState = GridState( grid )
-
-    newState.delta( state ).foreach( listener.apply _ )
+    //if (grid.isTokenPosition(current) && ( grid.colorOf(last) != grid.colorOf(current) ) )
+    //{
+      grid = grid.link( last, current )
+      val newState = GridState( grid )
+      newState.delta( state ).foreach( listener.apply _ )
+    //}
   }
 
 }
