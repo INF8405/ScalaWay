@@ -157,6 +157,7 @@ class DrawView( context: Context, dimension: Dimension, size: Int, level: Int, p
       paint.setColor( AColor.GREEN )
       paint.setTextSize( CELL_SIZE )
 
+      linkAmount = observer.get.grid.tubesDone
       canvas.drawText( s"links: $linkAmount", 0, LINK_OFFSET, paint )
     }
 
