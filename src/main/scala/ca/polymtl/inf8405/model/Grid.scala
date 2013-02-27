@@ -36,9 +36,14 @@ class UnsafeSet( set: Set[Link] )
 
 case class Grid( tokens: Set[Token], links: Set[Link], size: Int )
 {
-  def colorOf(coord: Coordinate): Color = tokens.groupBy(_.coordinate).get(coord).get.head.col
 
   def isTokenPosition(coord: Coordinate)= tokens.groupBy(_.coordinate).get(coord) != None
+
+  def isPartOfFullLink(token: Token): Boolean ={
+    val link = links.find( l => l.color == token.color)
+    link.get.subLinkables.contains(token)
+  }
+
 
   def link( from: Coordinate, to: Coordinate ): Grid =
   {
@@ -47,8 +52,40 @@ case class Grid( tokens: Set[Token], links: Set[Link], size: Int )
       getOrElse( this )
   }
 
+
+  def cleanupLink(from: Coordinate):Grid= {
+    getTokenFromCoordinate(from) match
+    {
+      case Some( token: Token ) =>
+        val newLinks = links.filter( l => l.position != from && !l.subLinkables.contains(token) )
+        Grid(tokens, newLinks.toSet, size)
+      case None =>
+        getLinkFromCoordinate( from ) match
+        {
+          case Some(link: Link)=>
+            val newLinks = links - links.find( l => l.subLinks.contains(link)).get + link
+            Grid(tokens, newLinks.toSet, size)
+          case None =>
+            this
+        }
+    }
+  }
+
+  def getLinkFromCoordinate(coord: Coordinate) =
+  {
+    links.map( _.subLinks ).flatten.find( t => t.position == coord )
+  }
+
+  def getTokenFromCoordinate(coord: Coordinate) =
+  {
+    tokens.find( t => t.position == coord )
+  }
+
+  def allLinkables = tokens ++ links.map( _.subLinks ).flatten
+
   def link( from: Coordinate, direction: Direction ): Grid =
   {
+    cleanupLink(from)
     if( isInvalidLink( from, direction ) ) this
     else
     {
@@ -132,7 +169,6 @@ case class Grid( tokens: Set[Token], links: Set[Link], size: Int )
 
   def isFull: Boolean =
   {
-    val allLinkables = tokens ++ links.map( _.subLinkables).flatten
     coords.flatten.forall(
       coordinate => ( allLinkables.exists( _.position == coordinate ) )
     )

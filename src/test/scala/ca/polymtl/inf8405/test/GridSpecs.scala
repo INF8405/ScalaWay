@@ -5,6 +5,7 @@ import model._
 
 import org.scalatest._
 import matchers.ShouldMatchers
+import scala.collection
 
 class GridSpecs extends FunSpec with ShouldMatchers
 {
@@ -481,7 +482,6 @@ class GridSpecs extends FunSpec with ShouldMatchers
   describe("Link between token(0,0) and token(2,0) in 3x3 grid")
   {
     //  r - r
-
     val red = Color(1)
     val redCoord1 = Coordinate( 0, 0 )
 
@@ -499,6 +499,21 @@ class GridSpecs extends FunSpec with ShouldMatchers
     it("should have a coordinate 1 0")
     {
       assert( solvedGrid.links.head.from.position === Coordinate(1,0))
+    }
+  }
+
+  describe("Sublinkable ")
+  {
+    val red = Token(Color(1), Coordinate(0,0))
+    val link = Link(red, Right)
+    val link2 = Link(link, Right)
+    it("should return all sublinks and tokens in the link (token, link)")
+    {
+      link.subLinkables should be (List(link, red))
+    }
+    it("should return all sublinks and tokens in the link (token, link, link2)")
+    {
+      link2.subLinkables should be (List(link2, link, red))
     }
   }
 }

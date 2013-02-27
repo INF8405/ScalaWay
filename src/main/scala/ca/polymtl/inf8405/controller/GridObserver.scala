@@ -38,14 +38,16 @@ trait GridListener
 
 case class GridObserver( var grid: Grid, listener: GridListener, var state: GridState = GridState.empty)
 {
+  def cleanupGrid(from: Coordinate)=
+  {
+    grid = grid.cleanupLink(from)
+  }
+
   def link( last: Coordinate, current: Coordinate )
   {
-    //if (grid.isTokenPosition(current) && ( grid.colorOf(last) != grid.colorOf(current) ) )
-    //{
-      grid = grid.link( last, current )
-      val newState = GridState( grid )
-      newState.delta( state ).foreach( listener.apply _ )
-    //}
+    grid = grid.link( last, current )
+    val newState = GridState( grid )
+    newState.delta( state ).foreach( listener.apply _ )
   }
 
 }

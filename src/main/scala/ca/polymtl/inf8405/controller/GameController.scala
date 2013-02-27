@@ -9,6 +9,7 @@ import view.DrawView
 class GameController( drawView: DrawView, observer: GridObserver ) extends OnTouchListener
 {
   var lastCoord: Option[Coordinate] = None
+  var finishLinking = false
 
   override def onTouch( view: View, event: MotionEvent ): Boolean =
   {
@@ -19,6 +20,7 @@ class GameController( drawView: DrawView, observer: GridObserver ) extends OnTou
       case MotionEvent.ACTION_DOWN =>
       {
         lastCoord = Some( fromEvent( event ) )
+        observer.cleanupGrid(lastCoord.get)
         true
       }
       case MotionEvent.ACTION_MOVE =>
@@ -30,9 +32,14 @@ class GameController( drawView: DrawView, observer: GridObserver ) extends OnTou
         else
         {
           val currentCoordinate = fromEvent( event )
-          for { last <- lastCoord if last != currentCoordinate }
+          for { last <- lastCoord if last != currentCoordinate && !finishLinking}
           {
+            val tubesDone = observer.grid.tubesDone
             observer.link( last, currentCoordinate )
+            val newTubesDone = observer.grid.tubesDone
+            if ( tubesDone != newTubesDone )
+              finishLinking = true
+
             lastCoord = Some( currentCoordinate )
           }
         }
@@ -42,7 +49,7 @@ class GameController( drawView: DrawView, observer: GridObserver ) extends OnTou
       case MotionEvent.ACTION_UP =>
       {
         lastCoord = None
-
+        finishLinking = false
         true
       }
       case _ => false
