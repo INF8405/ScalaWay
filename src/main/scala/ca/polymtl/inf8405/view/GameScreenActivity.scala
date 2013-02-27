@@ -51,7 +51,7 @@ class GameScreenActivity extends CustomWindowTitle with ActivityScreenSize
     val ( width, height ) = ( dim.height, dim.width )
 
     val popupWidth = 3 * width / 4
-    val popupHeigth = height / 3
+    val popupHeigth = height / 4
 
     val replayGame = new NewGameListener( this , level_ )
     val dimension = Dimension( popupWidth, popupHeigth )
@@ -93,7 +93,7 @@ class GameScreenActivity extends CustomWindowTitle with ActivityScreenSize
     mainLayout.setOrientation( LinearLayout.VERTICAL )
     mainLayout.setGravity( Gravity.CENTER_VERTICAL )
 
-    val drawView_ = new DrawView( this, screenSize, sizeMap_, level_, popup_ )
+    val drawView_ = new DrawView( this, screenSize, sizeMap_, level_, popup_, mainLayout )
     drawView_.setFocusable( true )
     drawView_.setFocusableInTouchMode( true )
 

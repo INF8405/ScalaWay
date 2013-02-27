@@ -29,7 +29,7 @@ class TransparentPanelLayout(
 
     // == Header ==
     val headerView = new TextView( context )
-    headerView.setTextSize( dimension.height / 16 )
+    headerView.setTextSize( dimension.height / 8 )
     headerView.setTextColor( TEXT_PANEL_COLOR )
     headerView.setGravity( Gravity.CENTER )
     headerView.setLayoutParams( new LinearLayout.LayoutParams(
@@ -41,7 +41,7 @@ class TransparentPanelLayout(
 
     // == Text ==
     val textView = new TextView( context )
-    textView.setTextSize( dimension.height / 32 )
+    textView.setTextSize( dimension.height / 12 )
     textView.setTextColor( TEXT_PANEL_COLOR )
     textView.setGravity( Gravity.CENTER )
     textView.setLayoutParams( new LinearLayout.LayoutParams(
@@ -65,7 +65,7 @@ class TransparentPanelLayout(
       button.setOnClickListener( listener )
       button.setTextColor( TEXT_PANEL_COLOR )
       button.setText( buttonText )
-
+      button.setTextSize(dimension.height / 12 )
       button
     }}.foreach( addView _ )
   }

@@ -10,9 +10,9 @@ import android.graphics.{Point, Paint, Canvas, Color => AColor}
 import model.Coordinate
 import controller.GameController
 import android.view.View.{OnClickListener, MeasureSpec}
-import android.widget.PopupWindow
+import android.widget.{LinearLayout, PopupWindow}
 
-class DrawView( context: Context, dimension: Dimension, size: Int, level: Int, popup: PopupWindow ) extends View( context )
+class DrawView( context: Context, dimension: Dimension, size: Int, level: Int, popup: PopupWindow, mainLayout: LinearLayout ) extends View( context )
 {self =>
 
   private var linkAmount = 0
@@ -33,8 +33,8 @@ class DrawView( context: Context, dimension: Dimension, size: Int, level: Int, p
           case Complete =>
           {
             // bravo
-            popup.showAtLocation( self, Gravity.CENTER, 0, 0 )
-            popup.update( 0, 0, dimension.width, dimension.height)
+            popup.showAtLocation( mainLayout, Gravity.CENTER, 0, 0 )
+            popup.update( 0, 0, 3*dimension.width/4, dimension.height/4 )
             linkAmount = 0
           }
           case LinkChanged( amount ) =>
