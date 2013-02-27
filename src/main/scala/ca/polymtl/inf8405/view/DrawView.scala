@@ -20,8 +20,9 @@ class DrawView( context: Context, dimension: Dimension, size: Int, level: Int, p
   private val ( width, height ) = ( dimension.width, dimension.height )
   val GRID_SIZE = Math.min( width, height )
   private val CELL_SIZE = GRID_SIZE / size
+  private val TEXT_SIZE = 100
   private val TOKEN_RADIUS = 3 * CELL_SIZE / 8
-  private val LINK_OFFSET = 100
+  private val LINK_OFFSET = GRID_SIZE + TEXT_SIZE
 
   val observer =
   {
@@ -51,7 +52,7 @@ class DrawView( context: Context, dimension: Dimension, size: Int, level: Int, p
   }
 
   val gridPaint = new Paint
-  gridPaint.setColor( AColor.BLACK )
+  gridPaint.setColor( AColor.WHITE )
   gridPaint.setStrokeWidth( 5 )
 
   val tokenPaint = new Paint
@@ -80,8 +81,8 @@ class DrawView( context: Context, dimension: Dimension, size: Int, level: Int, p
     {
       for {
         obs <- observer
-        x <- 1 to obs.grid.size
-        y <- 1 to obs.grid.size }
+        x <- 0 to obs.grid.size
+        y <- 0 to obs.grid.size }
       {
         canvas.drawLine( CELL_SIZE * x, 0, CELL_SIZE * x, GRID_SIZE, gridPaint )
         canvas.drawLine( 0, CELL_SIZE * y, GRID_SIZE, CELL_SIZE * y, gridPaint )
@@ -154,7 +155,7 @@ class DrawView( context: Context, dimension: Dimension, size: Int, level: Int, p
     def drawLinkAmount( )
     {
       val paint = new Paint()
-      paint.setColor( AColor.GREEN )
+      paint.setColor( AColor.WHITE )
       paint.setTextSize( CELL_SIZE )
 
       linkAmount = observer.get.grid.tubesDone
@@ -173,7 +174,7 @@ class DrawView( context: Context, dimension: Dimension, size: Int, level: Int, p
     val measuredHeight = MeasureSpec.getSize( height )
 
     val min = Math.min( measuredHeight, measuredWidth )
-
-    setMeasuredDimension( min, min )
+    setBackgroundColor(AColor.BLACK)
+    setMeasuredDimension( min, min + TEXT_SIZE)
   }
 }

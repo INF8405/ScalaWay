@@ -16,14 +16,4 @@
             android:layout_marginBottom="@dimen/CustomMarginButton"
             android:onClick="playGame" />
 
-    <Button
-            android:id="@+id/ButtonQuit"
-            android:layout_width="250dp"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_below="@id/ButtonPlay"
-            android:text="@string/button_quit"
-            android:layout_marginTop="@dimen/CustomMarginButton"
-            android:layout_marginBottom="@dimen/CustomMarginButton"/>
-
 </RelativeLayout>
