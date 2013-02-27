@@ -5,11 +5,12 @@ import model._
 import controller._
 
 import android.view.{WindowManager, View}
-import android.content.Context
+import android.content.{Intent, Context}
 import android.graphics.{Point, Paint, Canvas, Color => AColor}
 import model.Coordinate
 import controller.GameController
-import android.view.View.MeasureSpec
+import android.view.View.{OnClickListener, MeasureSpec}
+import android.widget.PopupWindow
 
 class DrawView( context: Context, dimension: Dimension, size: Int, level: Int ) extends View( context )
 {
@@ -31,6 +32,7 @@ class DrawView( context: Context, dimension: Dimension, size: Int, level: Int ) 
           case Complete =>
           {
             // bravo
+
           }
           case LinkChanged( amount ) =>
           {
@@ -39,6 +41,11 @@ class DrawView( context: Context, dimension: Dimension, size: Int, level: Int ) 
         }
       }
     }))
+  }
+
+  def showPopup =
+  {
+
   }
 
   for { obs <- observer }
@@ -61,7 +68,11 @@ class DrawView( context: Context, dimension: Dimension, size: Int, level: Int ) 
     GridFactory.blue -> AColor.BLUE,
     GridFactory.orange -> AColor.rgb( 255, 204, 0 ),
     GridFactory.green -> AColor.GREEN,
-    GridFactory.yellow -> AColor.YELLOW
+    GridFactory.yellow -> AColor.YELLOW,
+    GridFactory.cyan -> AColor.CYAN,
+    GridFactory.brown -> AColor.rgb( 147, 137, 83 ),
+    GridFactory.lightGreen -> AColor.rgb( 149, 244, 153 ),
+    GridFactory.redWine -> AColor.rgb( 148, 54, 52 )
   )
 
   setBackgroundColor( AColor.WHITE )

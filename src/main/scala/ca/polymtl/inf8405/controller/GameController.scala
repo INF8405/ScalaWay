@@ -42,11 +42,14 @@ class GameController( drawView: DrawView, observer: GridObserver ) extends OnTou
       case MotionEvent.ACTION_UP =>
       {
         lastCoord = None
+
         true
       }
       case _ => false
     }
   }
+
+
 
   def fromEvent( event: MotionEvent ) = pixelToModel( event.getX, event.getY )
 

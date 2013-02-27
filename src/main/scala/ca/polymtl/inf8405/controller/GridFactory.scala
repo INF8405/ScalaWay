@@ -12,7 +12,6 @@ object GridFactory
   val orange = Color(5)
   val cyan = Color(6)
   val brown = Color(7)
-  val purple = Color(8)
   val lightGreen = Color(9)
   val redWine = Color(10)
 

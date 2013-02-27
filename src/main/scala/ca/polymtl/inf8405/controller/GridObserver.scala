@@ -45,4 +45,5 @@ case class GridObserver( var grid: Grid, listener: GridListener, var state: Grid
 
     newState.delta( state ).foreach( listener.apply _ )
   }
+
 }

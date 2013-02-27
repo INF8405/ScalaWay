@@ -124,6 +124,8 @@ case class Grid( tokens: Set[Token], links: Set[Link], size: Int )
     }
   }
 
+  def isFinished = isFull && isAllLinked
+
   def isFull =
   {
     val allLinkables = links ++ tokens

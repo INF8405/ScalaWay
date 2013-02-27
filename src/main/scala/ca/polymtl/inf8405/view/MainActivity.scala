@@ -3,7 +3,7 @@ package view
 
 import android.app.Activity
 import android.os.Bundle
-import android.view.{View, Menu}
+import android.view.{View}
 import android.content.Intent
 
 class MainActivity extends Activity with TypedActivity
@@ -15,7 +15,6 @@ class MainActivity extends Activity with TypedActivity
     super.onCreate( savedInstanceState )
     setContentView( R.layout.activity_main )
   }
-
 
   def playGame( view: View )
   {

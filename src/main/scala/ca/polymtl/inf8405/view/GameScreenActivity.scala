@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.view.Gravity
-import android.view.Menu
 import android.view.View
 import android.view.View.OnClickListener
 import android.view.ViewGroup.LayoutParams
@@ -45,15 +44,6 @@ class GameScreenActivity extends CustomWindowTitle with ActivityScreenSize
     // Set the background color for activity - has the same color as canvas background
     getWindow.getDecorView.setBackgroundColor(BACKGROUND_COLOR)
 
-    // Create activity dynamic
-    val mainLayout = new LinearLayout( this )
-    mainLayout.setOrientation( LinearLayout.VERTICAL )
-    mainLayout.setGravity( Gravity.CENTER_VERTICAL )
-
-    val drawView_ = new DrawView( this, screenSize, sizeMap_, level_ )
-    drawView_.setFocusable( true )
-    drawView_.setFocusableInTouchMode( true )
-
     // Test - Create popupwindow
     val popup_ = new PopupWindow( this )
     popup = Some( popup_ )
@@ -61,7 +51,7 @@ class GameScreenActivity extends CustomWindowTitle with ActivityScreenSize
     val ( width, height ) = ( dim.height, dim.width )
 
     val popupWidth = 3 * width / 4
-    val popupHeigth = height / 4
+    val popupHeigth = height / 3
 
     val replayGame = new NewGameListener( this , level_ )
     val dimension = Dimension( popupWidth, popupHeigth )
@@ -98,6 +88,15 @@ class GameScreenActivity extends CustomWindowTitle with ActivityScreenSize
       popup_.setContentView( transparentLayout )
     }
 
+    // Create activity dynamic
+    val mainLayout = new LinearLayout( this )
+    mainLayout.setOrientation( LinearLayout.VERTICAL )
+    mainLayout.setGravity( Gravity.CENTER_VERTICAL )
+
+    val drawView_ = new DrawView( this, screenSize, sizeMap_, level_ )
+    drawView_.setFocusable( true )
+    drawView_.setFocusableInTouchMode( true )
+
     val resetButton = new Button(this)
     resetButton.setText("RESET")
     val buttonLayout = new LinearLayout.LayoutParams(
@@ -110,7 +109,7 @@ class GameScreenActivity extends CustomWindowTitle with ActivityScreenSize
     resetButton.setOnClickListener( new OnClickListener() {
       override def onClick( view: View ) {
         popup_.showAtLocation( mainLayout, Gravity.CENTER, 0, 0 )
-        popup_.update( 0, 0, dimension.width, dimension.height )
+        popup_.update( 0, 0, dimension.width, dimension.height)
       }
     })
 
@@ -123,13 +122,16 @@ class GameScreenActivity extends CustomWindowTitle with ActivityScreenSize
   {
     override def onClick( v: View )
     {
+      val editor = getSharedPreferences(SelectLevelActivity.PREFS_NAME, Context.MODE_PRIVATE).edit()
+      editor.putInt(sizeMap.get.toString, nextLevel)
+      editor.commit()
+
       val intent = new Intent(contextParent, classOf[GameScreenActivity])
       sizeMap.foreach( intent.putExtra( SelectSizeActivity.SIZE_MESSAGE, _ ) )
       intent.putExtra(SelectLevelActivity.LEVEL_MESSAGE, nextLevel)
       startActivity(intent)
 
       self.finish()
-
       popup.foreach( _.dismiss() )
     }
   }
@@ -141,4 +143,5 @@ class GameScreenActivity extends CustomWindowTitle with ActivityScreenSize
       popup.foreach( _.dismiss() )
     }
   }
+
 }
