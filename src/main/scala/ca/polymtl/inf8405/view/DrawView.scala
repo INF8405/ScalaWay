@@ -4,7 +4,7 @@ package view
 import model._
 import controller._
 
-import android.view.{WindowManager, View}
+import android.view.{Gravity, WindowManager, View}
 import android.content.{Intent, Context}
 import android.graphics.{Point, Paint, Canvas, Color => AColor}
 import model.Coordinate
@@ -12,8 +12,9 @@ import controller.GameController
 import android.view.View.{OnClickListener, MeasureSpec}
 import android.widget.PopupWindow
 
-class DrawView( context: Context, dimension: Dimension, size: Int, level: Int ) extends View( context )
-{
+class DrawView( context: Context, dimension: Dimension, size: Int, level: Int, popup: PopupWindow ) extends View( context )
+{self =>
+
   private var linkAmount = 0
 
   private val ( width, height ) = ( dimension.width, dimension.height )
@@ -32,7 +33,9 @@ class DrawView( context: Context, dimension: Dimension, size: Int, level: Int ) 
           case Complete =>
           {
             // bravo
-
+            popup.showAtLocation( self, Gravity.CENTER, 0, 0 )
+            popup.update( 0, 0, dimension.width, dimension.height)
+            linkAmount = 0
           }
           case LinkChanged( amount ) =>
           {

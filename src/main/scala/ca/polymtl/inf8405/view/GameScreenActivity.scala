@@ -44,7 +44,7 @@ class GameScreenActivity extends CustomWindowTitle with ActivityScreenSize
     // Set the background color for activity - has the same color as canvas background
     getWindow.getDecorView.setBackgroundColor(BACKGROUND_COLOR)
 
-    // Test - Create popupwindow
+    // Create popupwindow
     val popup_ = new PopupWindow( this )
     popup = Some( popup_ )
     val dim = screenSize
@@ -93,7 +93,7 @@ class GameScreenActivity extends CustomWindowTitle with ActivityScreenSize
     mainLayout.setOrientation( LinearLayout.VERTICAL )
     mainLayout.setGravity( Gravity.CENTER_VERTICAL )
 
-    val drawView_ = new DrawView( this, screenSize, sizeMap_, level_ )
+    val drawView_ = new DrawView( this, screenSize, sizeMap_, level_, popup_ )
     drawView_.setFocusable( true )
     drawView_.setFocusableInTouchMode( true )
 
@@ -106,12 +106,7 @@ class GameScreenActivity extends CustomWindowTitle with ActivityScreenSize
     buttonLayout.gravity = Gravity.CENTER
     resetButton.setLayoutParams( buttonLayout )
     resetButton.setEnabled( true )
-    resetButton.setOnClickListener( new OnClickListener() {
-      override def onClick( view: View ) {
-        popup_.showAtLocation( mainLayout, Gravity.CENTER, 0, 0 )
-        popup_.update( 0, 0, dimension.width, dimension.height)
-      }
-    })
+    resetButton.setOnClickListener( new NewGameListener(this, level_))
 
     mainLayout.addView( drawView_ )
     mainLayout.addView( resetButton )
