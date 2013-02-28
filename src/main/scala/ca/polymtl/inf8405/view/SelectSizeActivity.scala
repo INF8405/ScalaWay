@@ -16,7 +16,7 @@ object SelectSizeActivity
   val SIZE_MESSAGE = "SizeMessage"
 }
 
-class SelectSizeActivity extends Activity
+class SelectSizeActivity extends CustomWindowTitle
   with TypedActivity
   with ActivityScreenSize
   with ButtonLayout
@@ -26,6 +26,9 @@ class SelectSizeActivity extends Activity
   {
     super.onCreate( savedInstanceState )
 
+    title.foreach( _.setText("Select Size" ) )
+
+    // Create the layout of the activity
     val  mainLayout = new LinearLayout( this )
     mainLayout.setOrientation( LinearLayout.VERTICAL )
     mainLayout.setGravity( Gravity.CENTER_VERTICAL )
@@ -34,12 +37,14 @@ class SelectSizeActivity extends Activity
     label.setText( "Size" )
     mainLayout.addView( label )
 
+    // Dynamically add buttons to windows in relation to gridFactory
     GridFactory.grids.groupBy( _.grid.size ).toSeq.sortBy(_._1).map{ case ( size, _ ) => {
       val button = new Button( this )
       button.setText( s"$size x $size" )
       button.setLayoutParams( buttonLayout )
       button.setOnClickListener( new OnClickListener()
       {
+        // Open new windows to select the level
         override def onClick( v: View )
         {
           val intent = new Intent( self, classOf[SelectLevelActivity] )

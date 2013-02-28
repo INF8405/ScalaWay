@@ -456,7 +456,7 @@ class GridSpecs extends FunSpec with ShouldMatchers
     it("should return all coordinates 2x2 grid")
     {
       val grid = Grid(Set.empty[Token], Set.empty[Link], 2)
-      val allCoords = grid.coords
+      val allCoords = grid.allCoords
       assert ( allCoords.flatten.size === 4 )
       assert ( allCoords.flatten.contains(Coordinate(0,0)))
       assert ( allCoords.flatten.contains(Coordinate(0,1)))
@@ -467,7 +467,7 @@ class GridSpecs extends FunSpec with ShouldMatchers
     it("should return all coordinates 3x3 grid")
     {
       val grid = Grid(Set.empty[Token], Set.empty[Link], 3)
-      val allCoords = grid.coords
+      val allCoords = grid.allCoords
       val l = List(Coordinate(0,0), Coordinate(1,0), Coordinate(2,0),
         Coordinate(0,1), Coordinate(1,1), Coordinate(2,1),
         Coordinate(0,2), Coordinate(1,2), Coordinate(2,2))

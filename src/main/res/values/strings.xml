@@ -24,7 +24,7 @@
     <string name="level_completed_header">Level Complete!</string>
 
     <color name="gray">#808080</color>
-    <color name="black">#696969</color>
+    <color name="black">#000000</color>
     <color name="red">#B22222</color>
     <color name="aqua">#00FFFF</color>
 

@@ -17,7 +17,7 @@ object SelectLevelActivity
 }
 
 class SelectLevelActivity
-  extends Activity
+  extends CustomWindowTitle
   with TypedActivity
   with ActivityScreenSize
   with ButtonLayout
@@ -29,7 +29,7 @@ class SelectLevelActivity
   protected override def onResume()
   {
     super.onResume()
-
+    // Update the button status when user re-opens the windows
     val lastLevel = getSharedPreferences(SelectLevelActivity.PREFS_NAME, Context.MODE_PRIVATE).getInt(size.get.toString, 1)
     for ( i <- 0 until mainLayout.get.getChildCount)
     {
@@ -47,15 +47,8 @@ class SelectLevelActivity
     val size_ = intent.getIntExtra( SelectSizeActivity.SIZE_MESSAGE, NOT_SET )
     size = if ( size_ == NOT_SET ) None else Some( size_ )
 
-/*  Testing purpose - reset all preferences data to 1
-    val settings = getSharedPreferences(SelectLevelActivity.PREFS_NAME, Context.MODE_PRIVATE)
-    val editor = settings.edit()
-    editor.putInt("7",1)
-    editor.putInt("8",1)
-    editor.commit()
-    val lastLevel = settings.getInt(size_.toString, 1)
-*/
-
+    title.foreach( _.setText("Select Level" ) )
+    // Dynamically create a layout for this activity based on the number of levels
     for { s <- size }
     {
       mainLayout = Some(new LinearLayout( this ))

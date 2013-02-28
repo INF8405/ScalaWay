@@ -13,14 +13,18 @@ object UnsafeSet
   implicit def toUnsafeSet( set: Set[Link] ) = new UnsafeSet( set )
 }
 
+/**
+ * A set which define add/remove operations our specific context
+ * @param set
+ */
 class UnsafeSet( set: Set[Link] )
 {
   def -( other: Linkable ):Set[Link] =
   {
     other match
     {
-      case link: Link => set - link
-      case token: Token => set.filter( !_.isOrigin( token ) )
+      case link: Link => set - link // If link, normal remove
+      case token: Token => set.filter( !_.isOrigin( token ) ) // if token, remove the link which has this token as origin
     }
   }
 
@@ -28,23 +32,15 @@ class UnsafeSet( set: Set[Link] )
   {
     other match
     {
-      case link: Link => set + link
-      case _ => set
+      case link: Link => set + link // If link, normal add
+      case _ => set // If not link, dont add
     }
   }
 }
 
 case class Grid( tokens: Set[Token], links: Set[Link], size: Int )
 {
-
-  def isTokenPosition(coord: Coordinate)= tokens.groupBy(_.coordinate).get(coord) != None
-
-  def isPartOfFullLink(token: Token): Boolean ={
-    val link = links.find( l => l.color == token.color)
-    link.get.subLinkables.contains(token)
-  }
-
-
+  // Create a new link from 2 coordinates
   def link( from: Coordinate, to: Coordinate ): Grid =
   {
     DirectionSet.values.find( from + _ == to ).
@@ -52,17 +48,19 @@ case class Grid( tokens: Set[Token], links: Set[Link], size: Int )
       getOrElse( this )
   }
 
-
+  // Perform cleanup when user clicks on "from" coordinate
   def cleanupLink(from: Coordinate):Grid= {
     getTokenFromCoordinate(from) match
     {
       case Some( token: Token ) =>
+        // If token, remove all links starting from and going to this position
         val newLinks = links.filter( l => l.position != from && !l.subLinkables.contains(token) )
         Grid(tokens, newLinks.toSet, size)
       case None =>
         getLinkFromCoordinate( from ) match
         {
           case Some(link: Link)=>
+            // Remove all following links from this position
             val newLinks = links - links.find( l => l.subLinks.contains(link)).get + link
             Grid(tokens, newLinks.toSet, size)
           case None =>
@@ -85,7 +83,6 @@ case class Grid( tokens: Set[Token], links: Set[Link], size: Int )
 
   def link( from: Coordinate, direction: Direction ): Grid =
   {
-    cleanupLink(from)
     if( isInvalidLink( from, direction ) ) this
     else
     {
@@ -105,7 +102,7 @@ case class Grid( tokens: Set[Token], links: Set[Link], size: Int )
 
         val intersectionToken =
           tokens.
-            filter( _.position == position ).
+            find( _.position == position ).
             map( t => ( t, t ) )
 
         if ( intersectionToken.isEmpty )
@@ -119,23 +116,25 @@ case class Grid( tokens: Set[Token], links: Set[Link], size: Int )
         }
         else
         {
-          intersectionToken.headOption
+          intersectionToken
         }
       }
 
       ( findLinkableAndIntersection( from ), findLinkableAndIntersection( to ) ) match
       {
+        // we linking into something
         case ( Some( ( fromLink, fromIntersect ) ), Some( ( toLink, toIntersect ) ) ) =>
         {
+          // something is our own link
           if( fromLink == toLink ||         // self breaking link on a link
             fromLink.isOrigin( toLink ) )   // self breaking link on a token
           {
             this.copy( links = links - fromLink + toIntersect )
           }
-          else
+          else // something is another link
           {
             val newLink = Link( fromIntersect, direction )
-            if ( toIntersect.isEnd( newLink ) )
+            if ( toIntersect.isEnd( newLink ) ) // other link has the same color as our
             {
               // put two links together
               val newLink2 = newLink + toIntersect
@@ -156,10 +155,12 @@ case class Grid( tokens: Set[Token], links: Set[Link], size: Int )
             }
           }
         }
+        // We linking into empty position
         case ( Some( ( fromLink, fromIntersect ) ), None ) =>
         {
           this.copy( links = ( links - fromLink ) + Link( fromIntersect, direction ) )
         }
+        // Nothing to link from
         case _ => this
       }
     }
@@ -167,15 +168,16 @@ case class Grid( tokens: Set[Token], links: Set[Link], size: Int )
 
   def isFinished = isFull && isAllLinked
 
+  // Every position in the grid contains at least a token/link
   def isFull: Boolean =
   {
-    coords.flatten.forall(
-      coordinate => ( allLinkables.exists( _.position == coordinate ) )
-    )
+    allLinkables.map( _.position ).toSet.size == size*size
   }
 
+  // All tokens pairs are linked between each other
   def isAllLinked = tubesDone == tokens.groupBy( _.color ).size
 
+  // Return the number of token pairs which have been linked
   def tubesDone =
   {
     tokens.groupBy( _.color ).count{ case ( _, tokensPair ) => {
@@ -183,8 +185,9 @@ case class Grid( tokens: Set[Token], links: Set[Link], size: Int )
     }}
   }
 
-  def coords = List.tabulate(size,size){ case (x,y) => Coordinate(x, y) }
+  def allCoords = List.tabulate(size,size){ case (x,y) => Coordinate(x, y) }
 
+  // If direction point to outside of grid
   private def isInvalidLink( from: Coordinate, to: Direction ): Boolean =
   {
     val toCoord = from + to
@@ -195,18 +198,23 @@ case class Grid( tokens: Set[Token], links: Set[Link], size: Int )
   }
 }
 
-
+// Can link from this object
 trait Linkable
 {
   def position: Coordinate
   def color: Color
+  // All childrens of this linkable object. If token, itself. If Link, itself + sublinks + originToken
   def subLinkables: List[Linkable]
+  // All childrens which are link (not token)
   def subLinks: List[Link]
+  // Do these linkables create a link between a token pair ?
   def isEnd( linkable: Linkable ): Boolean
+  // If this token is the token from which we start the link
   def isOrigin( linkable: Linkable ): Boolean
 
   def +( other: Linkable ): Link
 }
+
 case class Token( col: Color, coordinate: Coordinate ) extends Linkable
 {
   def position = coordinate
@@ -300,10 +308,9 @@ case class Color( code: Int )
   override def toString = code.toString
 }
 
-
-// TODO: Put back in test
 /*
  * Starting from a position we can compose ( >> ) and set a new starting position ( <*> )
+ * This structure allow to avoid to repeating the "from" position by some chaining callls
  */
 case class FastGrid( grid: Grid, from: Coordinate )
 {
